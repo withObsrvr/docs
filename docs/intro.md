@@ -2,46 +2,98 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
 
-Let's discover **Docusaurus in less than 5 minutes**.
+## **Obsrvr Gateway Overview**
 
-## Getting Started
+Obsrvr Gateway provides a seamless and secure connection to both the **Stellar** and **Soroban RPC** networks. It allows developers and businesses to interact with both **Mainnet** and **Testnet** environments using dedicated APIs. Whether you are building decentralized applications (dApps) or exploring transaction data, the Obsrvr Gateway ensures easy access to the tools you need.
 
-Get started by **creating a new site**.
+### **Supported Networks:**
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+- **Stellar Mainnet:** `https://stellar.nodeswithobsrvr.co/`
+- **Stellar Testnet:** `https://stellar-testnet.nodeswithobsrvr.co/`
+- **Soroban RPC Mainnet:** `https://rpc.nodeswithobsrvr.co/`
+- **Soroban RPC Testnet:** `https://rpc-testnet.nodeswithobsrvr.co/`
 
-### What you'll need
+These endpoints allow access to their respective networks for interacting with accounts, assets, transactions, and other key data on the Stellar and Soroban networks.
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+---
 
-## Generate a new site
+## **API Key Authentication**
 
-Generate a new Docusaurus site using the **classic template**.
+To access any of the provided APIs, you must authenticate using an API key. These keys can be generated from the **Obsrvr Console**.
 
-The classic template will automatically be added to your project after you run the command:
+### **How to Generate an API Key:**
+
+1. Visit the Obsrvr Console: [console.withobsrvr.com](https://console.withobsrvr.com).
+2. Create a subscription to access Obsrvr services.
+3. After creating your subscription, navigate to the "Teams" section.
+4. Generate a **Team API Key**. 
+5. Your API key will be displayed at the top of the screen in a message bar. Make sure to copy it for future use.
+6. You can revoke the API key at any time by selecting the **Revoke** button next to the key in the Console.
+
+### **Using the API Key in Requests:**
+
+When making requests to the Obsrvr Gateway, include the API key in the HTTP headers for authentication. The format for the header is as follows:
 
 ```bash
-npm init docusaurus@latest my-website classic
+Authorization: Api-Key YOUR_API_KEY
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
+**Example Request:**
 
 ```bash
-cd my-website
-npm run start
+curl -H "Authorization: Api-Key 1bBhBBbB.AAaa6MlgbAa5CCCIQaaaaCRClP4567yy" -L https://stellar-testnet.nodeswithobsrvr.co/
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+This header ensures that your requests are authorized to access the network resources.
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+---
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+## **Endpoints**
+
+### **Stellar Mainnet:**
+
+- **Base URL:** `https://stellar.nodeswithobsrvr.co/`
+- **Usage:** Access Stellar’s main network for real-time transactions, accounts, and asset data.
+
+### **Stellar Testnet:**
+
+- **Base URL:** `https://stellar-testnet.nodeswithobsrvr.co/`
+- **Usage:** Interact with Stellar’s test network to develop and test applications.
+
+### **Soroban RPC Mainnet:**
+
+- **Base URL:** `https://rpc.nodeswithobsrvr.co/`
+- **Usage:** Execute Soroban smart contracts, and query real-time blockchain data on the main network.
+
+### **Soroban RPC Testnet:**
+
+- **Base URL:** `https://rpc-testnet.nodeswithobsrvr.co/`
+- **Usage:** Develop, test, and simulate Soroban smart contracts in a test environment.
+
+---
+
+## **Managing API Keys**
+
+API keys are critical for accessing and managing Obsrvr Gateway resources. You can create, view, and revoke keys directly through the Obsrvr Console. 
+
+- **Creating API Keys:**
+  - Go to the Obsrvr Console and navigate to the "Teams" section.
+  - Click on "New Team API Key" to generate a key.
+- **Revoking API Keys:**
+  - To revoke an API key, select the **Revoke** button next to the specific key in the Console. Once revoked, the key will no longer be valid for authorization.
+
+---
+
+## **Best Practices**
+
+- **Keep your API key private**: Ensure that your API keys are not shared publicly or in your source code. 
+- **Use a separate key for each environment**: You can generate separate API keys for different teams or environments (production, testing) to maintain better security and manageability.
+- **Rotate your keys regularly**: Regularly rotating API keys ensures enhanced security and minimizes risk in case of accidental exposure.
+
+---
+
+### **Next Steps:**
+
+For more information on how to use the API or integrate with Stellar/Soroban, explore our comprehensive [API documentation](https://docs.withobsrvr.com) or visit the Obsrvr Console at [console.withobsrvr.com](https://console.withobsrvr.com).

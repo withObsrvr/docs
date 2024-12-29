@@ -65,24 +65,24 @@ const config = {
           srcDark: "img/obsrvr_white.png",
         },
         items: [
-          {
-            type: "docSidebar",
-            sidebarId: "products",
-            position: "left",
-            label: "Products",
-          },
-          {
-            type: "docSidebar",
-            sidebarId: "tutorial",
-            position: "left",
-            label: "Reference",
-          },
-          {
-            type: "docSidebar",
-            sidebarId: "docs",
-            position: "left",
-            label: "FAQ",
-          },
+          // {
+          //   type: "docSidebar",
+          //   sidebarId: "products",
+          //   position: "left",
+          //   label: "Products",
+          // },
+          // {
+          //   type: "docSidebar",
+          //   sidebarId: "tutorial",
+          //   position: "left",
+          //   label: "Reference",
+          // },
+          // {
+          //   type: "docSidebar",
+          //   sidebarId: "docs",
+          //   position: "left",
+          //   label: "FAQ",
+          // },
           {
             href: "https://github.com/withObsrvr/docs",
             label: "GitHub",
@@ -106,16 +106,8 @@ const config = {
             title: "Community",
             items: [
               {
-                label: "Stack Overflow",
-                href: "https://stackoverflow.com/questions/tagged/docusaurus",
-              },
-              {
-                label: "Discord",
-                href: "https://discordapp.com/invite/docusaurus",
-              },
-              {
                 label: "Twitter",
-                href: "https://twitter.com/docusaurus",
+                href: "https://twitter.com/withObsrvr",
               },
             ],
           },
@@ -129,7 +121,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} OBSRVR, Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
