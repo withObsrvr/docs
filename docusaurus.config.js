@@ -8,7 +8,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Obsrvr",
+  title: "Obsrvr Documentation",
   tagline: "Web3 development platform",
   favicon: "img/favicon.ico",
 
@@ -16,12 +16,12 @@ const config = {
   url: "https://withobsrvr.com",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/",
+  baseUrl: "/obsrvr-docs/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "withObsrvr", // Usually your GitHub org/user name.
-  projectName: "docs", // Usually your repo name.
+  projectName: "obsrvr-docs", // Usually your repo name.
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
