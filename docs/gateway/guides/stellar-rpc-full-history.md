@@ -227,22 +227,138 @@ Once running, test the health endpoint:
 curl http://localhost:8000/health
 ```
 
-### Query Historical Data
+### Test RPC Methods
 
-Test historical ledger retrieval:
+#### 1. Get Latest Ledger
+
+Verify the RPC is syncing with the network:
 
 ```bash
-# Get a specific historical ledger
 curl -X POST http://localhost:8000 \
-  -H "Content-Type: application/json" \
+  -H 'Content-Type: application/json' \
   -d '{
     "jsonrpc": "2.0",
-    "id": 1,
-    "method": "getLedgerEntries",
-    "params": {
-      "ledger": 1000
-    }
+    "method": "getLatestLedger",
+    "id": 1
   }'
+```
+
+Expected response:
+```json
+{
+  "id": "1",
+  "jsonrpc": "2.0",
+  "result": {
+    "id": "...",
+    "protocolVersion": 21,
+    "sequence": 502464
+  }
+}
+```
+
+#### 2. Query Historical Ledgers
+
+Test retrieval of historical ledgers from the datastore:
+
+```bash
+# Get a very old ledger (ledger 10000)
+curl -X POST http://localhost:8000 \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "getLedgers",
+    "params": {
+      "startLedger": 10000,
+      "pagination": {
+        "limit": 1
+      }
+    },
+    "id": 1
+  }' | jq
+```
+
+#### 3. Test Recent Ledgers
+
+Verify recent ledgers are accessible:
+
+```bash
+# Get a recent ledger
+curl -X POST http://localhost:8000 \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "getLedgers",
+    "params": {
+      "startLedger": 500000,
+      "pagination": {
+        "limit": 1
+      }
+    },
+    "id": 1
+  }' | jq
+```
+
+#### 4. Pagination Test
+
+Test pagination through multiple ledgers:
+
+```bash
+# Get 5 ledgers starting from ledger 10000
+curl -X POST http://localhost:8000 \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "getLedgers",
+    "params": {
+      "startLedger": 10000,
+      "pagination": {
+        "limit": 5
+      }
+    },
+    "id": 1
+  }' | jq '.result.ledgers[].sequence'
+```
+
+#### 5. Get Transactions from Historical Ledger
+
+Retrieve transactions from a specific historical ledger:
+
+```bash
+# Get transactions from ledger 50000
+curl -X POST http://localhost:8000 \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "getTransactions",
+    "params": {
+      "startLedger": 50000,
+      "pagination": {
+        "limit": 10
+      }
+    },
+    "id": 1
+  }' | jq
+```
+
+#### 6. Test Very Early Ledger
+
+Verify access to genesis or early ledgers:
+
+```bash
+# Get one of the first ledgers
+curl -X POST http://localhost:8000 \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "getLedgers",
+    "params": {
+      "startLedger": 2,
+      "pagination": {
+        "limit": 1
+      }
+    },
+    "id": 1
+  }' | jq
 ```
 
 ### Monitor Datastore Access
@@ -250,10 +366,87 @@ curl -X POST http://localhost:8000 \
 Check logs for datastore-related messages:
 
 ```bash
-docker logs stellar-rpc | grep -i datastore
+# View datastore operations
+docker logs stellar-rpc 2>&1 | grep -i datastore
+
+# Check for successful ledger retrievals
+docker logs stellar-rpc 2>&1 | grep -i "fetched ledger"
+
+# Monitor any datastore errors
+docker logs stellar-rpc 2>&1 | grep -i "error.*datastore"
 ```
 
-You should see messages confirming successful connection to the GCS bucket.
+You should see messages like:
+- "Successfully connected to datastore"
+- "Fetched ledger X from datastore"
+- "Datastore buffer size: Y"
+
+### Performance Testing
+
+Test the response time for different ledger ranges:
+
+```bash
+# Time a historical query
+time curl -X POST http://localhost:8000 \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "getLedgers",
+    "params": {
+      "startLedger": 100000,
+      "pagination": {
+        "limit": 1
+      }
+    },
+    "id": 1
+  }' > /dev/null
+```
+
+### Verify Full History Access
+
+Run this script to test access across different ledger ranges:
+
+```bash
+#!/bin/bash
+# test-history.sh
+
+echo "Testing Stellar RPC historical data access..."
+
+# Array of test ledgers spanning testnet history
+test_ledgers=(100 1000 10000 50000 100000 200000 300000 400000 500000)
+
+for ledger in "${test_ledgers[@]}"; do
+    echo -n "Testing ledger $ledger: "
+    
+    response=$(curl -s -X POST http://localhost:8000 \
+      -H 'Content-Type: application/json' \
+      -d "{
+        \"jsonrpc\": \"2.0\",
+        \"method\": \"getLedgers\",
+        \"params\": {
+          \"startLedger\": $ledger,
+          \"pagination\": {
+            \"limit\": 1
+          }
+        },
+        \"id\": 1
+      }")
+    
+    if echo "$response" | jq -e '.result.ledgers[0]' > /dev/null 2>&1; then
+        echo "✓ Success"
+    else
+        echo "✗ Failed"
+        echo "$response" | jq
+    fi
+done
+```
+
+Make the script executable and run it:
+
+```bash
+chmod +x test-history.sh
+./test-history.sh
+```
 
 ## Performance Tuning
 
