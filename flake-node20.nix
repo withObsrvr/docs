@@ -1,22 +1,17 @@
 {
-  description = "Obsrvr Documentation - Docusaurus development environment";
+  description = "Obsrvr Documentation - Docusaurus development environment (Node.js 20)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # Use a specific nixpkgs revision that still has Node.js 18
-    nixpkgs-node18.url = "github:NixOS/nixpkgs/a3ed7406349a9335cb4c2a71369b697cecd9d351";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-node18, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        pkgs-node18 = nixpkgs-node18.legacyPackages.${system};
         
-        # Use Node.js 18 from the older nixpkgs
-        nodejs = pkgs-node18.nodejs_18;
-        # Use yarn from current nixpkgs but override with our Node.js 18
+        nodejs = pkgs.nodejs_20;
         yarn = pkgs.yarn.override { inherit nodejs; };
       in
       {
@@ -34,6 +29,9 @@
             echo "🚀 Obsrvr Documentation Development Environment"
             echo "📦 Node.js version: $(node --version)"
             echo "📦 Yarn version: $(yarn --version)"
+            echo ""
+            echo "⚠️  WARNING: Using Node.js 20 instead of Node.js 18"
+            echo "⚠️  The project specifies Node.js 18+, so this should work fine."
             echo ""
             echo "Available commands:"
             echo "  yarn install    - Install dependencies"
