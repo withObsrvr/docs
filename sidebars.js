@@ -19,6 +19,21 @@ const sidebars = {
     'intro',
     {
       type: 'category',
+      label: 'Gateway',
+      collapsed: false,
+      items: [
+        'gateway/overview',
+        {
+          type: 'category',
+          label: 'Guides',
+          items: [
+            'gateway/guides/stellar-rpc-full-history',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
       label: 'Flow',
       collapsed: false,
       items: [
