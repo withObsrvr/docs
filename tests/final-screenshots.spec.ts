@@ -12,7 +12,7 @@ test.describe('Final Design Screenshots - Day 2', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Hover over Products dropdown to show menu
-    await page.locator('text=Products').hover();
+    await page.locator('.navbar__link:has-text("Products")').first().hover();
     await page.waitForTimeout(500);
     await page.screenshot({ path: 'obsrvr-screenshots/day2-dropdown-menu.png' });
   });
