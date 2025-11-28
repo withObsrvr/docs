@@ -3,69 +3,156 @@ sidebar_position: 10
 title: Pricing
 ---
 
-# Flow Pricing
+import HelperBox from '@site/src/components/HelperBox';
 
-Flow uses simple, transparent pay-as-you-go pricing that scales with your usage. Only pay for the time your pipelines are actively running.
+# Pricing
 
-## Pricing Model
+Simple, transparent pricing that scales with your usage. Build on Stellar & Soroban with predictable costs and included usage allowances.
 
-### Base Rate
+## Launch Plan
+
+**Everything you need to get started**
+
+### $99/month
+
+The Launch Plan includes generous usage allowances for all Obsrvr services with transparent overage pricing.
+
+#### ✅ Included Usage Allowances
+
+| Resource | Included | Overage Rate |
+|----------|----------|--------------|
+| **ObsrvrLake Storage** | 250 GB | $0.01/GB-month |
+| **Flow Processing** | 50 GB processed | $0.10/GB |
+| **Lake Queries** | 1,000,000 queries | $2.00 per 1,000 queries |
+| **Gateway Requests** | 1,000,000 requests | $15.00 per 1M requests |
+| **Data Egress** | 25 GB | $0.08/GB |
+| **Concurrent Pipelines** | 2 pipelines | $10/month per extra pipeline |
+
+#### ✅ Additional Features
+
+- **Email Support** - 24-hour SLA response time
+- **30 Days Data Retention** - Automatic backups and retention
+- **Multi-Network Access** - Stellar mainnet and testnet
+- **Console Dashboard** - Real-time usage monitoring
+- **API Access** - Full API access to all services
+
+<HelperBox title="Start building today" icon="🚀" variant="tip">
+
+The Launch Plan is perfect for:
+- Development teams building on Stellar
+- Production applications with predictable usage
+- Teams wanting all Obsrvr services in one plan
+- Projects needing generous included allowances
+
+**Get started:** [Sign up for Launch Plan](https://console.withobsrvr.com) and start building immediately.
+
+</HelperBox>
+
+---
+
+## Usage Examples
+
+### Typical Monthly Usage Scenarios
+
+#### Small Project
+**Profile:** Development & testing, 1-2 active pipelines
+- Flow Processing: 10 GB → **Included**
+- Gateway Requests: 200K → **Included**
+- Lake Queries: 50K → **Included**
+- Storage: 50 GB → **Included**
+
+**Total Cost:** **$99/month** (no overages)
+
+#### Medium Application
+**Profile:** Production app, moderate traffic
+- Flow Processing: 45 GB → **Included**
+- Gateway Requests: 800K → **Included**
+- Lake Queries: 500K → **Included**
+- Storage: 180 GB → **Included**
+
+**Total Cost:** **$99/month** (no overages)
+
+#### High-Volume Application
+**Profile:** Heavy processing, high traffic
+- Flow Processing: 75 GB → $2.50 overage (25 GB × $0.10)
+- Gateway Requests: 2.5M → $22.50 overage (1.5M × $15/1M)
+- Lake Queries: 1.8M → $1.60 overage (800K × $2/1K)
+- Storage: 300 GB → $0.50 overage (50 GB × $0.01)
+
+**Total Cost:** **$126.10/month** ($99 base + $27.10 overage)
+
+---
+
+## Legacy Pricing
+
+The following pay-as-you-go pricing is available for existing subscribers. **New users should choose the Launch Plan** for better value and predictability.
+
+### Flow Pipelines (Legacy)
 **$0.003 per minute** of pipeline runtime
+- No included allowance
+- Billed per minute of active pipeline time
+- First 100 minutes free for new accounts
 
-- No setup fees
-- No minimum commitments
-- No hidden costs
-- Cancel anytime
+### Gateway (Legacy)
+**$0.000007 per API call**
+- Horizon API access
+- Soroban RPC access
+- All networks (mainnet, testnet)
 
-### Free Tier
-**First 100 pipeline-minutes free** for new users
-- Perfect for testing and development
-- Automatically applied to new accounts
-- No credit card required to start
+### Nodes (Legacy)
+**$2.25 per hour**
+- Dedicated Stellar/Soroban node
+- Single network access
+- Direct node access
+
+<HelperBox title="Upgrading from legacy pricing?" icon="💡" variant="info">
+
+Existing subscribers can continue using legacy pricing. Contact [sales@withobsrvr.com](mailto:sales@withobsrvr.com) to discuss upgrading to the Launch Plan for:
+- More predictable costs
+- Included usage allowances
+- All services in one plan
+- Simplified billing
+
+</HelperBox>
+
+---
 
 ## How Billing Works
 
-### Runtime Calculation
-- Billing starts when pipeline enters `running` state
-- Billing stops when pipeline is `stopped`, `completed`, or `failed`
-- Billed to the nearest minute
-- Paused pipelines don't incur charges
+### Launch Plan Billing
 
-### Monthly Billing
-- Usage aggregated monthly
-- Invoiced at the end of each billing cycle
-- Detailed usage reports available
-- Multiple payment methods supported
+1. **Base Charge:** $99/month recurring subscription
+2. **Usage Tracking:** All usage tracked against included allowances
+3. **Overage Calculation:** Only usage above included limits is billed
+4. **Monthly Invoice:** Base + any overage charges at end of billing period
 
-## Cost Examples
+### Billing Cycle
+- Monthly subscription (automatically renews)
+- Usage resets at start of each billing period
+- Detailed usage dashboard in Console
+- Downloadable invoices and usage reports
 
-### Small Pipeline
-**Monitoring specific accounts**
-- Runtime: 24/7 (43,200 minutes/month)
-- Cost: $129.60/month
+### Payment
+- Credit/debit cards (Visa, Mastercard, Amex)
+- Automatic monthly billing
+- Secure payment via Stripe
+- Change payment methods anytime
 
-### Medium Pipeline
-**Processing payment streams**
-- Runtime: Business hours (8h/day, 22 days)
-- Runtime: 10,560 minutes/month
-- Cost: $31.68/month
-
-### Large Pipeline
-**Network-wide analytics**
-- Runtime: 24/7 with 95% uptime
-- Runtime: 41,040 minutes/month
-- Cost: $123.12/month
-
-### Development Pipeline
-**Testing and development**
-- Runtime: 2 hours/day
-- Runtime: 3,600 minutes/month
-- Cost: $10.80/month
+---
 
 ## Cost Optimization
 
-### 1. Efficient Filtering
-Use processor filters to reduce data volume:
+### Monitor Your Usage
+
+Track usage in real-time via the Console dashboard:
+- Current usage vs. allowances
+- Projected end-of-month costs
+- Usage breakdown by service
+- Historical usage trends
+
+### Optimize Flow Processing
+
+**Efficient Filtering** - Process only the data you need:
 ```json
 {
   "type": "payments_memo",
@@ -76,130 +163,130 @@ Use processor filters to reduce data volume:
 }
 ```
 
-### 2. Batch Processing
-Larger batch sizes reduce processing overhead:
+**Batch Processing** - Larger batches reduce overhead:
 ```json
 {
   "consumer": {
     "type": "postgres",
     "config": {
-      "batch_size": 100  // More efficient than batch_size: 1
+      "batch_size": 100
     }
   }
 }
 ```
 
-### 3. Schedule Pipelines
-For non-critical data, run pipelines during specific hours:
-- Process historical data in batches
-- Run analytics during off-peak hours
-- Pause development pipelines when not in use
+### Optimize Gateway Usage
 
-### 4. Monitor Usage
-Track your usage in real-time:
-- Dashboard shows current runtime
-- Usage alerts available
-- Detailed cost breakdowns
-- Export usage data for analysis
+- Cache frequently accessed data
+- Use webhooks instead of polling
+- Batch requests when possible
+- Implement efficient pagination
 
-## Pricing Calculator
+### Storage Management
 
-Estimate your monthly costs:
+- Archive old data to cheaper storage
+- Use data retention policies
+- Compress data before storage
+- Monitor storage growth
 
-| Use Case | Runtime | Minutes/Month | Monthly Cost |
-|----------|---------|---------------|--------------|
-| Real-time monitoring | 24/7 | 43,200 | $129.60 |
-| Business hours only | 8h × 22d | 10,560 | $31.68 |
-| Overnight batch | 6h × 30d | 10,800 | $32.40 |
-| Weekend processing | 48h × 4 | 11,520 | $34.56 |
-| Hourly snapshots | 5min × 24 × 30 | 3,600 | $10.80 |
-
-## Subscription Management
-
-### Starting a Subscription
-1. Add payment method in Console
-2. Subscribe to Flow
-3. Create your first pipeline
-4. Automatic billing begins
-
-### Monitoring Usage
-- Real-time usage dashboard
-- Email notifications for thresholds
-- Downloadable invoices
-- Usage API for automation
-
-### Cancellation
-- Cancel anytime from Console
-- Pipelines stop at end of billing period
-- Pro-rated refunds available
-- Data export supported
+---
 
 ## Enterprise Pricing
 
-For high-volume usage or custom requirements:
+For high-volume usage, custom requirements, or dedicated infrastructure:
 
 ### Volume Discounts
-- 1M+ minutes/month: Contact sales
-- Annual commitments: Up to 20% discount
-- Custom pricing for specific use cases
+- Custom pricing for 100GB+ monthly processing
+- Annual commit discounts available
+- Dedicated account management
 
 ### Enterprise Features
-- Dedicated infrastructure
-- SLA guarantees
-- Priority support
-- Custom integrations
+- **Dedicated Infrastructure** - Isolated deployment
+- **SLA Guarantees** - 99.9% uptime commitment
+- **Priority Support** - 4-hour response time
+- **Custom Integrations** - Tailored solutions
+- **Compliance** - SOC 2, GDPR assistance
 
 ### Contact Sales
-Email: sales@withobsrvr.com
+Email: [sales@withobsrvr.com](mailto:sales@withobsrvr.com)
+
+---
 
 ## FAQ
 
-### Is there a free trial?
-Yes! First 100 pipeline-minutes are free for new users.
+### What's included in the Launch Plan?
 
-### How accurate is billing?
-Billing is calculated to the nearest minute with millisecond precision tracking.
+The $99/month Launch Plan includes generous usage allowances for all Obsrvr services: 250GB storage, 50GB Flow processing, 1M Gateway requests, 1M Lake queries, 25GB egress, and 2 concurrent pipelines. You only pay overage if you exceed these limits.
+
+### How do I know if I'll exceed allowances?
+
+Your Console dashboard shows real-time usage vs. allowances with progress bars and projected costs. Most small-to-medium applications stay within included limits.
+
+### What happens if I exceed an allowance?
+
+You're only billed for the overage amount at the published overage rates. For example, if you use 1.5M Gateway requests, you pay $99 base + $7.50 for the extra 500K requests.
+
+### Can I upgrade from legacy pricing?
+
+Yes! Contact sales@withobsrvr.com to discuss upgrading. We'll help you estimate costs and make the transition smooth.
+
+### Is there a free trial?
+
+Yes! New Launch Plan subscribers get their first month with doubled allowances to try all features risk-free. Legacy Flow users get 100 free pipeline-minutes.
 
 ### Can I set spending limits?
-Yes, configure spending alerts and automatic pipeline pausing in Console.
+
+Yes, you can configure alerts when approaching allowance limits and set hard caps on overage spending in the Console.
 
 ### What payment methods are accepted?
-- Credit/debit cards (Visa, Mastercard, Amex)
-- ACH transfers (for Enterprise)
-- Wire transfers (for Enterprise)
 
-### Are there any additional fees?
-No. The only cost is the per-minute runtime charge.
+All major credit/debit cards (Visa, Mastercard, Amex) via Stripe. Enterprise plans can use ACH or wire transfers.
 
 ### What happens if payment fails?
-- 7-day grace period
-- Email notifications
-- Pipelines paused after grace period
-- Data preserved for 30 days
 
-### Can I get a refund?
-Pro-rated refunds available for annual plans. Contact support for assistance.
+You'll receive email notifications and have a 7-day grace period. Services pause after the grace period, but data is preserved for 30 days.
+
+### Can I cancel anytime?
+
+Yes, cancel anytime from the Console. Access continues through the end of your billing period with no pro-ration charges for early cancellation.
+
+### Are there any hidden fees?
+
+No. The only costs are the $99/month base and any usage overages at published rates. No setup fees, no egress fees beyond allowances, no surprise charges.
+
+---
 
 ## Comparison with Alternatives
 
-### vs. Self-Hosted Infrastructure
+### Launch Plan vs. Self-Hosted
 
-| Aspect | Flow | Self-Hosted |
-|--------|------|-------------|
-| Setup Cost | $0 | $1000s+ |
-| Monthly Cost (small) | ~$30 | ~$500+ (servers) |
-| Maintenance | None | 20+ hrs/month |
-| Scaling | Automatic | Manual |
+| Aspect | Obsrvr Launch Plan | Self-Hosted Infrastructure |
+|--------|-------------------|---------------------------|
+| Setup Cost | $0 | $5,000+ |
+| Monthly Cost | $99 + usage | $500+ (servers, maintenance) |
+| Maintenance | Zero | 40+ hours/month |
+| Scaling | Automatic | Manual infrastructure |
 | Time to Deploy | Minutes | Weeks |
+| Support | Included (24h SLA) | DIY |
 
-### vs. Other Data Platforms
+### Launch Plan vs. Competitor Platforms
 
-Flow's pricing is typically 50-80% less expensive than comparable platforms:
-- No ingress/egress fees
-- No storage charges
-- No per-event pricing
-- Simple per-minute model
+Obsrvr Launch Plan typically costs 50-70% less than comparable blockchain data platforms:
+- ✅ Included usage allowances (others charge per query/call)
+- ✅ No ingress fees
+- ✅ Transparent overage pricing (others have complex tiers)
+- ✅ All services in one plan
+- ✅ No vendor lock-in
+
+---
 
 ## Getting Started
 
-Ready to start? [Create your first pipeline](./getting-started/quickstart.md) and get 100 free minutes!
+Ready to start building on Stellar & Soroban?
+
+1. **[Sign up for Launch Plan](https://console.withobsrvr.com)** - Create your account
+2. **[Deploy your first pipeline](./getting-started/quickstart.md)** - 5-minute quickstart
+3. **Monitor usage** - Track usage in real-time via Console
+4. **Scale with confidence** - Predictable costs as you grow
+
+Questions? Email [support@withobsrvr.com](mailto:support@withobsrvr.com) or check our [documentation](../intro.md).

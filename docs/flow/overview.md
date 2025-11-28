@@ -40,12 +40,12 @@ Track pipeline performance with:
 - Usage metrics and cost tracking
 - Deployment error details
 
-### 💰 Pay-As-You-Go Pricing
-Simple, transparent pricing at **$0.003 per minute** of pipeline runtime:
-- First 100 minutes free for new users
-- No setup fees or minimum commitments
-- Only pay when pipelines are running
-- Monthly billing with detailed usage reports
+### 💰 Launch Plan Pricing
+Simple, predictable pricing with **$99/month** including generous usage allowances:
+- 50 GB Flow processing included
+- 2 concurrent pipelines included
+- Only pay for usage above included limits
+- Transparent overage pricing with no surprises
 
 ## Use Cases
 
@@ -142,12 +142,13 @@ Ready to build your first pipeline? Check out our [Quickstart Guide](./getting-s
 
 ## Pricing
 
-Flow uses simple pay-as-you-go pricing:
-- **$0.003 per minute** of pipeline runtime
-- **First 100 minutes free** for new users
-- **No setup fees** or hidden costs
+Flow is included in the Obsrvr Launch Plan:
+- **$99/month** base subscription
+- **50 GB Flow processing** included
+- **2 concurrent pipelines** included
+- **Transparent overage pricing** for usage above limits
 
-See our [Pricing Page](./pricing.md) for detailed information.
+See our [Pricing Page](./pricing.md) for detailed information, usage examples, and legacy pricing options.
 
 ## Access
 
