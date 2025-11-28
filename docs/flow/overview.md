@@ -95,22 +95,32 @@ Stellar/Soroban Network → Processor(s) → Consumer(s) → Your Application
 
 ## Available Components
 
-### Processors
-- **Payments with Memo**: Filter and process payment operations
-- **Raw Transactions**: Access all network transactions
-- **Account Balance**: Track balance changes
-- **Contract Events**: Subscribe to Soroban events
-- **Latest Ledger Metrics**: Real-time network statistics
-- **SwapService**: Track DEX activity
-- And more...
+### Component Registry
 
-### Consumers
+Browse our comprehensive component registry to discover all available sources, processors, and sinks:
+
+- **[Component Registry](./registry/overview.md)** - Complete catalog with configuration examples
+- **[Data Sources](./registry/sources.md)** - Stellar RPC and cloud storage adapters
+- **[Processors](./registry/processors.md)** - 55+ data transformation components
+- **[Sinks](./registry/sinks.md)** - 51 output destinations
+- **[Building Components](./registry/building-components.md)** - Guide for custom components
+- **[Pipeline Examples](./registry/examples.md)** - Complete pipeline configurations
+
+### Popular Processors
+- **Payments with Memo**: Filter and process payment operations
+- **Contract Events**: Subscribe to Soroban events
+- **Account Balance**: Track balance changes
+- **Latest Ledger Metrics**: Real-time network statistics
+- **DuckLake Ingestion**: Data lakehouse architecture
+- [View all 55+ processors →](./registry/processors.md)
+
+### Popular Consumers
 - **PostgreSQL**: Structured database storage
-- **Webhooks**: HTTP endpoint delivery
-- **Kafka**: Stream processing integration
-- **Amazon S3**: Cloud storage
+- **DuckDB/DuckLake**: Columnar analytics
 - **Redis**: Real-time data access
-- And more...
+- **ZeroMQ**: Low-latency messaging
+- **WebSocket**: Browser streaming
+- [View all 51 consumers →](./registry/sinks.md)
 
 ## Getting Started
 
