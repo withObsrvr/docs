@@ -65,27 +65,81 @@ const config = {
           srcDark: "img/obsrvr_white.png",
         },
         items: [
-          // {
-          //   type: "docSidebar",
-          //   sidebarId: "products",
-          //   position: "left",
-          //   label: "Products",
-          // },
-          // {
-          //   type: "docSidebar",
-          //   sidebarId: "tutorial",
-          //   position: "left",
-          //   label: "Reference",
-          // },
-          // {
-          //   type: "docSidebar",
-          //   sidebarId: "docs",
-          //   position: "left",
-          //   label: "FAQ",
-          // },
+          // Products dropdown
           {
-            href: "https://github.com/withObsrvr/docs",
-            label: "GitHub",
+            type: "dropdown",
+            label: "Products",
+            position: "left",
+            items: [
+              {
+                type: "doc",
+                docId: "intro",
+                label: "Overview",
+              },
+              {
+                type: "doc",
+                docId: "gateway/overview",
+                label: "Gateway Services",
+              },
+              {
+                type: "doc",
+                docId: "flow/overview",
+                label: "Flow Pipelines",
+              },
+            ],
+          },
+          // Documentation dropdown
+          {
+            type: "dropdown",
+            label: "Documentation",
+            position: "left",
+            items: [
+              {
+                type: "doc",
+                docId: "flow/getting-started/quickstart",
+                label: "Quick Start",
+              },
+              {
+                type: "doc",
+                docId: "flow/registry/overview",
+                label: "Component Registry",
+              },
+              {
+                type: "doc",
+                docId: "flow/processors/index",
+                label: "Processors",
+              },
+              {
+                type: "doc",
+                docId: "flow/consumers/index",
+                label: "Consumers",
+              },
+            ],
+          },
+          // Resources dropdown
+          {
+            type: "dropdown",
+            label: "Resources",
+            position: "left",
+            items: [
+              {
+                href: "https://console.withobsrvr.com",
+                label: "Console",
+              },
+              {
+                href: "https://status.withobsrvr.com",
+                label: "Status",
+              },
+              {
+                href: "https://github.com/withObsrvr",
+                label: "GitHub",
+              },
+            ],
+          },
+          // Right side items
+          {
+            href: "https://console.withobsrvr.com",
+            label: "Sign In",
             position: "right",
           },
         ],
