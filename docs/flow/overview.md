@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Overview
 ---
 
+import HelperBox from '@site/src/components/HelperBox';
+
 # Flow: Data Pipeline Platform for Stellar & Soroban
 
 Flow is Obsrvr's data pipeline platform that provides infrastructure building blocks for processing Stellar and Soroban blockchain data. With Flow, you can deploy data processing pipelines with one click, stream blockchain data in real-time, and deliver it to your preferred destination - all without managing complex infrastructure.
@@ -74,12 +76,24 @@ Process network-wide data for:
 ## How It Works
 
 1. **Choose Your Network**: Select between Stellar mainnet or testnet
-2. **Configure Your Pipeline**: 
+2. **Configure Your Pipeline**:
    - Select a starting ledger (latest or specific height)
    - Choose processors to transform the data
    - Configure consumers for data delivery
 3. **Deploy**: One-click deployment to Obsrvr's infrastructure
 4. **Monitor**: Track status, view logs, and monitor usage in real-time
+
+<HelperBox title="Just getting started?" icon="⚡" variant="tip">
+
+New to Flow? Follow our [Quickstart Guide](./getting-started/quickstart.md) to deploy your first pipeline in under 5 minutes. You'll learn how to:
+
+- Set up your Flow account
+- Configure a simple payment tracking pipeline
+- Deploy and monitor your first data stream
+
+**Bonus:** Your first 100 minutes are free - perfect for exploring and testing!
+
+</HelperBox>
 
 ## Architecture Overview
 

@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Registry Overview
 ---
 
+import HelperBox from '@site/src/components/HelperBox';
+
 # Component Registry
 
 The Obsrvr Flow Component Registry is a catalog of reusable data pipeline components. Similar to Terraform providers, components can be discovered, configured, and composed into powerful data processing pipelines.
@@ -16,6 +18,19 @@ Flow pipelines are built from three component types:
 | **Sources** | Where data comes from | Stellar RPC, Data Lakes, Storage |
 | **Processors** | Transform or extract data | Contract events, TTP extraction, Analytics |
 | **Sinks** | Where data goes | PostgreSQL, DuckDB, ZeroMQ, Files |
+
+<HelperBox title="Looking for a specific component?" icon="🔍" variant="info">
+
+Browse our complete component catalog:
+
+- **[Data Sources](./sources.md)** - Stellar RPC and cloud storage adapters
+- **[Processors](./processors.md)** - 55+ data transformation components
+- **[Sinks](./sinks.md)** - 51 output destinations
+- **[Pipeline Examples](./examples.md)** - Ready-to-use configurations
+
+Or check out our [Building Components Guide](./building-components.md) to create your own custom components.
+
+</HelperBox>
 
 ## Architecture
 

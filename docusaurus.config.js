@@ -148,34 +148,97 @@ const config = {
         style: "dark",
         links: [
           {
-            title: "Docs",
+            title: "Products",
             items: [
               {
-                label: "Tutorial",
-                to: "/docs/intro",
+                label: "Gateway Services",
+                to: "/docs/gateway/overview",
+              },
+              {
+                label: "Flow Pipelines",
+                to: "/docs/flow/overview",
+              },
+              {
+                label: "Pricing",
+                to: "/docs/flow/pricing",
               },
             ],
           },
           {
-            title: "Community",
+            title: "Developers",
+            items: [
+              {
+                label: "Documentation",
+                to: "/docs/intro",
+              },
+              {
+                label: "Quick Start",
+                to: "/docs/flow/getting-started/quickstart",
+              },
+              {
+                label: "Component Registry",
+                to: "/docs/flow/registry/overview",
+              },
+              {
+                label: "API Reference",
+                to: "/docs/gateway/overview",
+              },
+            ],
+          },
+          {
+            title: "Resources",
+            items: [
+              {
+                label: "Console",
+                href: "https://console.withobsrvr.com",
+              },
+              {
+                label: "Status",
+                href: "https://status.withobsrvr.com",
+              },
+              {
+                label: "GitHub",
+                href: "https://github.com/withObsrvr",
+              },
+              {
+                label: "Support",
+                href: "https://github.com/withObsrvr/docs/issues",
+              },
+            ],
+          },
+          {
+            title: "Company",
             items: [
               {
                 label: "Twitter",
                 href: "https://twitter.com/withObsrvr",
               },
-            ],
-          },
-          {
-            title: "More",
-            items: [
               {
-                label: "GitHub",
-                href: "https://github.com/withObsrvr/docs",
+                label: "Blog",
+                to: "/blog",
+              },
+              {
+                label: "Terms of Service",
+                href: "https://withobsrvr.com/terms",
+              },
+              {
+                label: "Privacy Policy",
+                href: "https://withobsrvr.com/privacy",
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} OBSRVR, Built with Docusaurus.`,
+        copyright: `
+          <div class="footer__bottom">
+            <div class="footer__copyright">
+              © ${new Date().getFullYear()} Obsrvr. Built for the Stellar ecosystem.
+            </div>
+            <div class="footer__badges">
+              <span class="footer__badge">⚡ Powered by Stellar</span>
+              <span class="footer__badge">🔒 Enterprise Ready</span>
+            </div>
+          </div>
+        `,
       },
       prism: {
         theme: prismThemes.github,

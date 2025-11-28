@@ -1,0 +1,92 @@
+/**
+ * HelperBox - Contextual helper sections for documentation
+ * Inspired by Stripe's "Just getting started?" boxes
+ */
+
+.helperBox {
+  background-color: var(--stripe-bg-secondary);
+  border: 1px solid var(--stripe-border);
+  border-left: 4px solid var(--stripe-purple);
+  border-radius: var(--radius-lg);
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-lg);
+}
+
+.helperBox.info {
+  border-left-color: #3B82F6;
+}
+
+.helperBox.success {
+  border-left-color: #10B981;
+}
+
+.helperBox.warning {
+  border-left-color: #F59E0B;
+}
+
+.helperBox.tip {
+  border-left-color: var(--stripe-purple);
+}
+
+.icon {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.title {
+  color: var(--stripe-gray-900);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-md);
+}
+
+.content {
+  color: var(--stripe-gray-700);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.content p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.content p:last-child {
+  margin-bottom: 0;
+}
+
+.content a {
+  color: var(--stripe-purple);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.content a:hover {
+  text-decoration: underline;
+}
+
+.content ul {
+  margin: var(--spacing-sm) 0;
+  padding-left: var(--spacing-lg);
+}
+
+.content li {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .helperBox {
+  background-color: var(--stripe-bg-secondary);
+  border-color: var(--stripe-border);
+}
+
+[data-theme='dark'] .content a {
+  color: var(--ifm-color-primary-light);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .helperBox {
+    margin: var(--spacing-lg) 0;
+    padding: var(--spacing-md);
+  }
+}
