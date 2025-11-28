@@ -64,7 +64,7 @@ function UserPathways() {
       icon: "🌐",
       links: [
         { label: "Connect to Stellar Horizon", to: "/docs/gateway/overview" },
-        { label: "Access Soroban RPC", to: "/docs/gateway/overview" },
+        { label: "Access Stellar RPC", to: "/docs/gateway/overview" },
         { label: "API authentication", to: "/docs/gateway/overview" },
       ],
     },
@@ -168,7 +168,7 @@ function TryItOut() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              to="https://console.withobsrvr.com"
+              to="https://console.withobsrvr.com/accounts/login/"
             >
               Open console →
             </Link>

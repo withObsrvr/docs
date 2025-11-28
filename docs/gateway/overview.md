@@ -12,7 +12,7 @@ Obsrvr Gateway provides enterprise-grade access to Stellar and Soroban networks 
 Obsrvr Gateway is a fully managed service that provides:
 
 - **Stellar Horizon API** endpoints for mainnet and testnet
-- **Soroban RPC** endpoints for smart contract interactions
+- **Stellar RPC** endpoints for smart contract interactions
 - **High availability** with global infrastructure
 - **No rate limits** for authenticated users
 - **Full historical data** access
@@ -33,7 +33,7 @@ https://stellar.nodeswithobsrvr.co/
 https://stellar-testnet.nodeswithobsrvr.co/
 ```
 
-### Soroban RPC
+### Stellar RPC
 
 Interact with Soroban smart contracts through our RPC endpoints:
 
@@ -83,7 +83,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
   https://stellar.nodeswithobsrvr.co/accounts/GABC...XYZ
 ```
 
-#### Soroban RPC Example
+#### Stellar RPC Example
 ```bash
 curl -X POST https://rpc.nodeswithobsrvr.co/ \
   -H "Authorization: Bearer YOUR_API_KEY" \

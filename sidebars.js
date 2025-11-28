@@ -73,20 +73,20 @@ const sidebars = {
       ],
     },
   ],
-  tutorial: [
-    {
-      type: 'category',
-      label: 'Tutorial',
-      items: ['tutorial-basics/create-a-document'],
-    },
-  ],
-  products: [
-    {
-      type: 'category',
-      label: 'Products',
-      items: ['tutorial-extras/manage-docs-versions'],
-    },
-  ],
+  // tutorial: [
+  //   {
+  //     type: 'category',
+  //     label: 'Tutorial',
+  //     items: ['tutorial-basics/create-a-document'],
+  //   },
+  // ],
+  // products: [
+  //   {
+  //     type: 'category',
+  //     label: 'Products',
+  //     items: ['tutorial-extras/manage-docs-versions'],
+  //   },
+  // ],
 
   // But you can create a sidebar manually
   /*

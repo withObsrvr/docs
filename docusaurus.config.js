@@ -138,7 +138,7 @@ const config = {
           },
           // Right side items
           {
-            href: "https://console.withobsrvr.com",
+            href: "https://console.withobsrvr.com/accounts/login/",
             label: "Sign In",
             position: "right",
           },
@@ -215,7 +215,7 @@ const config = {
               },
               {
                 label: "Blog",
-                to: "/blog",
+                href: "https://www.withobsrvr.com/blog",
               },
               {
                 label: "Terms of Service",
