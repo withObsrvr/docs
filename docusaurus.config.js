@@ -201,8 +201,16 @@ const config = {
                 href: "https://github.com/withObsrvr",
               },
               {
-                label: "Support",
+                label: "Contact Support",
                 href: "https://github.com/withObsrvr/docs/issues",
+              },
+              {
+                label: "Contact Sales",
+                href: "mailto:sales@withobsrvr.com",
+              },
+              {
+                label: "Changelog",
+                href: "https://www.withobsrvr.com/changelog", // Assuming a changelog exists here
               },
             ],
           },
@@ -228,17 +236,7 @@ const config = {
             ],
           },
         ],
-        copyright: `
-          <div class="footer__bottom">
-            <div class="footer__copyright">
-              © ${new Date().getFullYear()} Obsrvr. Built for the Stellar ecosystem.
-            </div>
-            <div class="footer__badges">
-              <span class="footer__badge">⚡ Powered by Stellar</span>
-              <span class="footer__badge">🔒 Enterprise Ready</span>
-            </div>
-          </div>
-        `,
+        copyright: `© ${new Date().getFullYear()} Obsrvr. All rights reserved.`,
       },
       prism: {
         theme: prismThemes.github,

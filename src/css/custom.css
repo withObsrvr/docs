@@ -284,6 +284,15 @@ p {
   margin-bottom: var(--spacing-md);
 }
 
+ul, ol {
+  margin-bottom: var(--spacing-md);
+  padding-left: var(--spacing-xl);
+}
+
+li {
+  margin-bottom: var(--spacing-xs);
+}
+
 a {
   font-weight: 500;
   transition: color var(--transition-fast);
@@ -523,27 +532,27 @@ article {
 }
 
 .markdown h1 {
-  font-size: var(--font-size-3xl);
-  margin-bottom: var(--spacing-md);
-  margin-top: var(--spacing-3xl);
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
 }
 
 .markdown h2 {
   border-bottom: 1px solid var(--stripe-border);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   margin-bottom: var(--spacing-md);
   margin-top: var(--spacing-2xl);
   padding-bottom: var(--spacing-sm);
 }
 
 .markdown h3 {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   margin-bottom: var(--spacing-sm);
   margin-top: var(--spacing-xl);
 }
 
 .markdown h4 {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-sm);
   margin-top: var(--spacing-lg);
 }
