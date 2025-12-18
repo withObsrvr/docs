@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Overview
 ---
 
+import HelperBox from '@site/src/components/HelperBox';
+
 # Flow: Data Pipeline Platform for Stellar & Soroban
 
 Flow is Obsrvr's data pipeline platform that provides infrastructure building blocks for processing Stellar and Soroban blockchain data. With Flow, you can deploy data processing pipelines with one click, stream blockchain data in real-time, and deliver it to your preferred destination - all without managing complex infrastructure.
@@ -38,12 +40,12 @@ Track pipeline performance with:
 - Usage metrics and cost tracking
 - Deployment error details
 
-### 💰 Pay-As-You-Go Pricing
-Simple, transparent pricing at **$0.003 per minute** of pipeline runtime:
-- First 100 minutes free for new users
-- No setup fees or minimum commitments
-- Only pay when pipelines are running
-- Monthly billing with detailed usage reports
+### 💰 Launch Plan Pricing
+Simple, predictable pricing with **$99/month** including generous usage allowances:
+- 50 GB Flow processing included
+- 2 concurrent pipelines included
+- Only pay for usage above included limits
+- Transparent overage pricing with no surprises
 
 ## Use Cases
 
@@ -74,43 +76,90 @@ Process network-wide data for:
 ## How It Works
 
 1. **Choose Your Network**: Select between Stellar mainnet or testnet
-2. **Configure Your Pipeline**: 
+2. **Configure Your Pipeline**:
    - Select a starting ledger (latest or specific height)
    - Choose processors to transform the data
    - Configure consumers for data delivery
 3. **Deploy**: One-click deployment to Obsrvr's infrastructure
 4. **Monitor**: Track status, view logs, and monitor usage in real-time
 
+<HelperBox title="Just getting started?" icon="⚡" variant="tip">
+
+New to Flow? Follow our [Quickstart Guide](./getting-started/quickstart.md) to deploy your first pipeline in under 5 minutes. You'll learn how to:
+
+- Set up your Flow account
+- Configure a simple payment tracking pipeline
+- Deploy and monitor your first data stream
+
+**Bonus:** Your first 100 minutes are free - perfect for exploring and testing!
+
+</HelperBox>
+
 ## Architecture Overview
 
 Flow pipelines follow a simple yet powerful architecture:
 
 ```
-Stellar/Soroban Network → Processor(s) → Consumer(s) → Your Application
+┌─────────────────────────────────────────────────────────────┐
+│                    Flow (Orchestrator)                       │
+│  • Component Registry & Health Monitoring                   │
+│  • Stream Management                                        │
+│  • Managed Infrastructure                                    │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+  │   Source     │───▶│  Processor   │───▶│    Sink      │
+  │              │    │              │    │              │
+  │ (Stellar/    │    │ (Transforms  │    │ (PostgreSQL, │
+  │  Soroban)    │    │  data)       │    │  Webhooks)   │
+  └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
+- **Sources** fetch data from Stellar/Soroban networks or cloud storage
 - **Processors** transform raw blockchain data into structured formats
-- **Consumers** deliver the processed data to your chosen destination
-- **Orchestration** handled automatically by Flow's infrastructure
+- **Sinks** deliver the processed data to your chosen destination
+- **Orchestration** handled automatically by Flow's managed infrastructure
+
+### Powered by flowctl
+
+Flow uses [flowctl](https://github.com/withobsrvr/flowctl) as its underlying orchestration engine. flowctl is an open-source pipeline orchestrator that:
+- Manages component lifecycle and health monitoring
+- Routes data between components via gRPC streams
+- Provides observability through metrics and structured logging
+- Supports multiple deployment targets (process, docker, kubernetes)
+
+**For self-hosted deployments**, you can use flowctl directly. See the [flowctl documentation](https://github.com/withobsrvr/flowctl) for installation and configuration.
 
 ## Available Components
 
-### Processors
-- **Payments with Memo**: Filter and process payment operations
-- **Raw Transactions**: Access all network transactions
-- **Account Balance**: Track balance changes
-- **Contract Events**: Subscribe to Soroban events
-- **Latest Ledger Metrics**: Real-time network statistics
-- **SwapService**: Track DEX activity
-- And more...
+### Component Registry
 
-### Consumers
+Browse our comprehensive component registry to discover all available sources, processors, and sinks:
+
+- **[Component Registry](./registry/overview.md)** - Complete catalog with configuration examples
+- **[Data Sources](./registry/sources.md)** - Stellar RPC and cloud storage adapters
+- **[Processors](./registry/processors.md)** - 55+ data transformation components
+- **[Sinks](./registry/sinks.md)** - 51 output destinations
+- **[Building Components](./registry/building-components.md)** - Guide for custom components
+- **[Pipeline Examples](./registry/examples.md)** - Complete pipeline configurations
+
+### Popular Processors
+- **Payments with Memo**: Filter and process payment operations
+- **Contract Events**: Subscribe to Soroban events
+- **Account Balance**: Track balance changes
+- **Latest Ledger Metrics**: Real-time network statistics
+- **DuckLake Ingestion**: Data lakehouse architecture
+- [View all 55+ processors →](./registry/processors.md)
+
+### Popular Consumers
 - **PostgreSQL**: Structured database storage
-- **Webhooks**: HTTP endpoint delivery
-- **Kafka**: Stream processing integration
-- **Amazon S3**: Cloud storage
+- **DuckDB/DuckLake**: Columnar analytics
 - **Redis**: Real-time data access
-- And more...
+- **ZeroMQ**: Low-latency messaging
+- **WebSocket**: Browser streaming
+- [View all 51 consumers →](./registry/sinks.md)
 
 ## Getting Started
 
@@ -118,12 +167,13 @@ Ready to build your first pipeline? Check out our [Quickstart Guide](./getting-s
 
 ## Pricing
 
-Flow uses simple pay-as-you-go pricing:
-- **$0.003 per minute** of pipeline runtime
-- **First 100 minutes free** for new users
-- **No setup fees** or hidden costs
+Flow is included in the Obsrvr Launch Plan:
+- **$99/month** base subscription
+- **50 GB Flow processing** included
+- **2 concurrent pipelines** included
+- **Transparent overage pricing** for usage above limits
 
-See our [Pricing Page](./pricing.md) for detailed information.
+See our [Pricing Page](./pricing.md) for detailed information, usage examples, and legacy pricing options.
 
 ## Access
 

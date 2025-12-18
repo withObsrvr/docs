@@ -65,27 +65,81 @@ const config = {
           srcDark: "img/obsrvr_white.png",
         },
         items: [
-          // {
-          //   type: "docSidebar",
-          //   sidebarId: "products",
-          //   position: "left",
-          //   label: "Products",
-          // },
-          // {
-          //   type: "docSidebar",
-          //   sidebarId: "tutorial",
-          //   position: "left",
-          //   label: "Reference",
-          // },
-          // {
-          //   type: "docSidebar",
-          //   sidebarId: "docs",
-          //   position: "left",
-          //   label: "FAQ",
-          // },
+          // Products dropdown
           {
-            href: "https://github.com/withObsrvr/docs",
-            label: "GitHub",
+            type: "dropdown",
+            label: "Products",
+            position: "left",
+            items: [
+              {
+                type: "doc",
+                docId: "intro",
+                label: "Overview",
+              },
+              {
+                type: "doc",
+                docId: "gateway/overview",
+                label: "Gateway Services",
+              },
+              {
+                type: "doc",
+                docId: "flow/overview",
+                label: "Flow Pipelines",
+              },
+            ],
+          },
+          // Documentation dropdown
+          {
+            type: "dropdown",
+            label: "Documentation",
+            position: "left",
+            items: [
+              {
+                type: "doc",
+                docId: "flow/getting-started/quickstart",
+                label: "Quick Start",
+              },
+              {
+                type: "doc",
+                docId: "flow/registry/overview",
+                label: "Component Registry",
+              },
+              {
+                type: "doc",
+                docId: "flow/processors/index",
+                label: "Processors",
+              },
+              {
+                type: "doc",
+                docId: "flow/consumers/index",
+                label: "Consumers",
+              },
+            ],
+          },
+          // Resources dropdown
+          {
+            type: "dropdown",
+            label: "Resources",
+            position: "left",
+            items: [
+              {
+                href: "https://console.withobsrvr.com",
+                label: "Console",
+              },
+              {
+                href: "https://status.withobsrvr.com",
+                label: "Status",
+              },
+              {
+                href: "https://github.com/withObsrvr",
+                label: "GitHub",
+              },
+            ],
+          },
+          // Right side items
+          {
+            href: "https://console.withobsrvr.com/accounts/login/",
+            label: "Sign In",
             position: "right",
           },
         ],
@@ -94,34 +148,95 @@ const config = {
         style: "dark",
         links: [
           {
-            title: "Docs",
+            title: "Products",
             items: [
               {
-                label: "Tutorial",
-                to: "/docs/intro",
+                label: "Gateway Services",
+                to: "/docs/gateway/overview",
+              },
+              {
+                label: "Flow Pipelines",
+                to: "/docs/flow/overview",
+              },
+              {
+                label: "Pricing",
+                to: "/docs/flow/pricing",
               },
             ],
           },
           {
-            title: "Community",
+            title: "Developers",
+            items: [
+              {
+                label: "Documentation",
+                to: "/docs/intro",
+              },
+              {
+                label: "Quick Start",
+                to: "/docs/flow/getting-started/quickstart",
+              },
+              {
+                label: "Component Registry",
+                to: "/docs/flow/registry/overview",
+              },
+              {
+                label: "API Reference",
+                to: "/docs/gateway/overview",
+              },
+            ],
+          },
+          {
+            title: "Resources",
+            items: [
+              {
+                label: "Console",
+                href: "https://console.withobsrvr.com",
+              },
+              {
+                label: "Status",
+                href: "https://status.withobsrvr.com",
+              },
+              {
+                label: "GitHub",
+                href: "https://github.com/withObsrvr",
+              },
+              {
+                label: "Contact Support",
+                href: "https://github.com/withObsrvr/docs/issues",
+              },
+              {
+                label: "Contact Sales",
+                href: "mailto:sales@withobsrvr.com",
+              },
+              {
+                label: "Changelog",
+                href: "https://www.withobsrvr.com/changelog", // Assuming a changelog exists here
+              },
+            ],
+          },
+          {
+            title: "Company",
             items: [
               {
                 label: "Twitter",
                 href: "https://twitter.com/withObsrvr",
               },
-            ],
-          },
-          {
-            title: "More",
-            items: [
               {
-                label: "GitHub",
-                href: "https://github.com/withObsrvr/docs",
+                label: "Blog",
+                href: "https://www.withobsrvr.com/blog",
+              },
+              {
+                label: "Terms of Service",
+                href: "https://withobsrvr.com/terms",
+              },
+              {
+                label: "Privacy Policy",
+                href: "https://withobsrvr.com/privacy",
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} OBSRVR, Built with Docusaurus.`,
+        copyright: `© ${new Date().getFullYear()} Obsrvr. All rights reserved.`,
       },
       prism: {
         theme: prismThemes.github,

@@ -7,6 +7,10 @@ title: Consumers Overview
 
 Consumers are the destination components in Flow pipelines that receive processed blockchain data and deliver it to your applications, databases, or storage systems. Each consumer is optimized for specific use cases and integration patterns.
 
+:::info Component Registry
+For a comprehensive overview including sink categories and selection guidance, see the **[Component Registry](../registry/sinks.md)**. You can also learn how to [build custom consumers](../registry/building-components.md) or explore [complete pipeline examples](../registry/examples.md).
+:::
+
 ## Available Consumers
 
 ### Database Storage - PostgreSQL
@@ -851,7 +855,9 @@ Some consumers support parallel writes:
 
 ## Next Steps
 
+- **[Component Registry](../registry/overview.md)** - Browse all sources, processors, and sinks
+- **[Building Custom Consumers](../registry/building-components.md)** - Create your own consumers
+- **[Pipeline Examples](../registry/examples.md)** - Complete pipeline configurations
 - Explore individual consumer documentation for detailed configuration
-- Check our [Getting Started Guide](../getting-started/quickstart.md) for implementation examples
 - Learn about [processors](../processors) to transform your data
-- Review [Flow Overview](../overview.md) for architecture details
+- Check our [Getting Started Guide](../getting-started/quickstart.md) for implementation examples

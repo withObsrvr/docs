@@ -7,6 +7,8 @@ title: Quickstart Guide
 
 Get your first Flow pipeline running in minutes. This guide walks you through creating a payment tracking pipeline that monitors Stellar payments and stores them in PostgreSQL.
 
+Flow pipelines are powered by [flowctl](https://github.com/withobsrvr/flowctl), an open-source orchestrator that manages component lifecycle, health monitoring, and data streaming. With Flow's managed service, you get all the benefits of flowctl without the operational overhead.
+
 ## Prerequisites
 
 Before you begin, ensure you have:
@@ -107,26 +109,44 @@ Monitor your costs in real-time:
 
 ## Example: Complete Pipeline Configuration
 
-Here's a complete example for tracking exchange deposits:
+Here's a complete example for tracking exchange deposits using the flowctl configuration format:
 
 ```yaml
-name: "exchange-deposit-tracker"
-network: "mainnet"
-start_ledger: "latest"
+apiVersion: flowctl/v1
+kind: Pipeline
+metadata:
+  name: exchange-deposit-tracker
+  description: Track deposits to exchange hot wallet
 
-processor:
-  type: "payments_memo"
-  config:
-    addresses: 
-      - "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"  # Exchange hot wallet
-    min_amount: "100"
+spec:
+  driver: process  # Managed by Flow
 
-consumer:
-  type: "postgres"
-  config:
-    connection_string: "postgresql://exchange:secure@db.example.com/deposits"
-    batch_size: 10
+  sources:
+    - id: stellar-mainnet
+      command: ["stellar-live-source"]
+      env:
+        NETWORK: "mainnet"
+        START_LEDGER: "latest"
+
+  processors:
+    - id: payment-filter
+      command: ["payments-memo-processor"]
+      inputs: ["stellar-mainnet"]
+      env:
+        # Exchange hot wallet
+        ADDRESSES: "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        MIN_AMOUNT: "100"
+
+  sinks:
+    - id: postgres-deposits
+      command: ["postgres-consumer"]
+      inputs: ["payment-filter"]
+      env:
+        CONNECTION_STRING: "postgresql://exchange:secure@db.example.com/deposits"
+        BATCH_SIZE: "10"
 ```
+
+**Note:** When using the Flow Console UI, this configuration is generated automatically. The flowctl format provides consistency with self-hosted deployments and enables advanced pipeline topologies.
 
 ## Querying Your Data
 

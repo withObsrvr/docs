@@ -79,8 +79,8 @@ yarn deploy
 The documentation covers these Obsrvr gateway endpoints:
 - Stellar Mainnet: `https://stellar.nodeswithobsrvr.co/`
 - Stellar Testnet: `https://stellar-testnet.nodeswithobsrvr.co/`
-- Soroban RPC Mainnet: `https://rpc.nodeswithobsrvr.co/`
-- Soroban RPC Testnet: `https://rpc-testnet.nodeswithobsrvr.co/`
+- Stellar RPC Mainnet: `https://rpc.nodeswithobsrvr.co/`
+- Stellar RPC Testnet: `https://rpc-testnet.nodeswithobsrvr.co/`
 - Console: `https://console.withobsrvr.com`
 
 ### MDX Support

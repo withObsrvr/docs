@@ -9,70 +9,82 @@ function HomepageHeader() {
   return (
     <header className={styles.hero}>
       <div className="container">
-        <h1 className={styles.heroTitle}>
-          <span className={styles.heroTitleGradient}>Obsrvr Docs</span>
-        </h1>
+        <h1 className={styles.heroTitle}>Documentation</h1>
         <p className={styles.heroSubtitle}>
-          Build on Stellar & Soroban with confidence
+          Explore our guides and examples to integrate Obsrvr services into your Stellar & Soroban applications
         </p>
-        <p className={styles.heroDescription}>
-          Everything you need to integrate with Obsrvr's gateway services and Flow data pipelines
-        </p>
+        <div className={styles.heroCTA}>
+          <Link
+            className={clsx("button button--primary button--lg", styles.ctaButton)}
+            to="/docs/flow/getting-started/quickstart"
+          >
+            Get started with Flow →
+          </Link>
+          <Link
+            className={clsx("button button--secondary button--lg", styles.ctaButton)}
+            to="/docs/intro"
+          >
+            Explore all services
+          </Link>
+        </div>
       </div>
     </header>
   );
 }
 
-function FeatureCard({ title, description, link, icon, gradient }) {
+function PathwayCard({ title, description, links, icon }) {
   return (
-    <Link to={link} className={styles.featureCard}>
-      <div className={clsx(styles.featureCardInner, gradient)}>
-        <div className={styles.featureIcon}>{icon}</div>
-        <h3 className={styles.featureTitle}>{title}</h3>
-        <p className={styles.featureDescription}>{description}</p>
-      </div>
-    </Link>
+    <div className={styles.pathwayCard}>
+      <div className={styles.pathwayIcon}>{icon}</div>
+      <h3 className={styles.pathwayTitle}>{title}</h3>
+      <ul className={styles.pathwayLinks}>
+        {links.map((link, idx) => (
+          <li key={idx}>
+            <Link to={link.to}>{link.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
-function HomepageFeatures() {
-  const features = [
+function UserPathways() {
+  const pathways = [
     {
-      title: "What is Obsrvr?",
-      description: "Learn about our Web3 development platform for Stellar and Soroban networks",
-      link: "/docs/intro",
-      icon: "🌐",
-      gradient: styles.gradientBlue,
+      title: "Quick start",
+      icon: "⚡",
+      links: [
+        { label: "Introduction to Obsrvr", to: "/docs/intro" },
+        { label: "Deploy your first pipeline", to: "/docs/flow/getting-started/quickstart" },
+        { label: "Understand pricing", to: "/docs/flow/pricing" },
+      ],
     },
     {
       title: "Gateway Services",
-      description: "Connect to Stellar Horizon and Soroban RPC with enterprise-grade reliability",
-      link: "/docs/gateway/overview",
-      icon: "🔌",
-      gradient: styles.gradientPurple,
+      icon: "🌐",
+      links: [
+        { label: "Connect to Stellar Horizon", to: "/docs/gateway/overview" },
+        { label: "Access Stellar RPC", to: "/docs/gateway/overview" },
+        { label: "API authentication", to: "/docs/gateway/overview" },
+      ],
     },
     {
       title: "Flow Pipelines",
-      description: "Build data pipelines to process blockchain events with one-click deployment",
-      link: "/docs/flow/overview",
       icon: "🔄",
-      gradient: styles.gradientGreen,
-    },
-    {
-      title: "Get Started",
-      description: "Create your first Flow pipeline and start processing blockchain data",
-      link: "/docs/flow/getting-started/quickstart",
-      icon: "🚀",
-      gradient: styles.gradientOrange,
+      links: [
+        { label: "Component registry", to: "/docs/flow/registry/overview" },
+        { label: "Processors", to: "/docs/flow/processors/" },
+        { label: "Consumers", to: "/docs/flow/consumers/" },
+      ],
     },
   ];
 
   return (
-    <section className={styles.features}>
+    <section className={styles.pathways}>
       <div className="container">
-        <div className={styles.featureGrid}>
-          {features.map((feature, idx) => (
-            <FeatureCard key={idx} {...feature} />
+        <div className={styles.pathwayGrid}>
+          {pathways.map((pathway, idx) => (
+            <PathwayCard key={idx} {...pathway} />
           ))}
         </div>
       </div>
@@ -80,35 +92,86 @@ function HomepageFeatures() {
   );
 }
 
-function QuickLinks() {
+function PopularResources() {
+  const resources = [
+    {
+      category: "Component Registry",
+      links: [
+        { label: "Sources", to: "/docs/flow/registry/sources" },
+        { label: "Processors", to: "/docs/flow/registry/processors" },
+        { label: "Sinks", to: "/docs/flow/registry/sinks" },
+        { label: "Building components", to: "/docs/flow/registry/building-components" },
+      ],
+    },
+    {
+      category: "Guides",
+      links: [
+        { label: "Pipeline concepts", to: "/docs/flow/concepts/pipelines" },
+        { label: "Configuration", to: "/docs/flow/overview" },
+        { label: "Example pipelines", to: "/docs/flow/registry/examples" },
+      ],
+    },
+    {
+      category: "Resources",
+      links: [
+        { label: "Console", to: "https://console.withobsrvr.com", external: true },
+        { label: "GitHub", to: "https://github.com/withObsrvr", external: true },
+        { label: "Status", to: "https://status.withobsrvr.com", external: true },
+      ],
+    },
+  ];
+
   return (
-    <section className={styles.quickLinks}>
+    <section className={styles.resources}>
       <div className="container">
-        <h2 className={styles.sectionTitle}>Popular Topics</h2>
-        <div className={styles.linkGrid}>
-          <div className={styles.linkColumn}>
-            <h3>Getting Started</h3>
-            <ul>
-              <li><Link to="/docs/intro">Introduction</Link></li>
-              <li><Link to="/docs/flow/getting-started/quickstart">Flow Quickstart</Link></li>
-              <li><Link to="/docs/flow/pricing">Pricing</Link></li>
-            </ul>
-          </div>
-          <div className={styles.linkColumn}>
-            <h3>Flow Components</h3>
-            <ul>
-              <li><Link to="/docs/flow/processors/">Processors</Link></li>
-              <li><Link to="/docs/flow/consumers/">Consumers</Link></li>
-              <li><Link to="/docs/flow/concepts/pipelines">Pipeline Concepts</Link></li>
-            </ul>
-          </div>
-          <div className={styles.linkColumn}>
-            <h3>Resources</h3>
-            <ul>
-              <li><a href="https://console.withobsrvr.com">Console</a></li>
-              <li><a href="https://github.com/withObsrvr">GitHub</a></li>
-              <li><a href="https://status.withobsrvr.com">Status</a></li>
-            </ul>
+        <h2 className={styles.resourcesTitle}>Popular resources</h2>
+        <div className={styles.resourceGrid}>
+          {resources.map((section, idx) => (
+            <div key={idx} className={styles.resourceSection}>
+              <h3 className={styles.resourceCategory}>{section.category}</h3>
+              <ul className={styles.resourceList}>
+                {section.links.map((link, linkIdx) => (
+                  <li key={linkIdx}>
+                    {link.external ? (
+                      <a href={link.to} target="_blank" rel="noopener noreferrer">
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link to={link.to}>{link.label}</Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TryItOut() {
+  return (
+    <section className={styles.tryItOut}>
+      <div className="container">
+        <div className={styles.tryItOutContent}>
+          <h2>Start building today</h2>
+          <p>
+            Deploy a Flow pipeline in minutes and start processing blockchain data with enterprise-grade reliability.
+          </p>
+          <div className={styles.tryItOutActions}>
+            <Link
+              className="button button--primary button--lg"
+              to="/docs/flow/getting-started/quickstart"
+            >
+              View quickstart guide
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              to="https://console.withobsrvr.com/accounts/login/"
+            >
+              Open console →
+            </Link>
           </div>
         </div>
       </div>
@@ -125,8 +188,9 @@ export default function Home() {
     >
       <HomepageHeader />
       <main>
-        <HomepageFeatures />
-        <QuickLinks />
+        <UserPathways />
+        <PopularResources />
+        <TryItOut />
       </main>
     </Layout>
   );

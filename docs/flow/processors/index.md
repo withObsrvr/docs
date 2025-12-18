@@ -7,6 +7,10 @@ title: Processors Overview
 
 Processors are the core components that transform raw blockchain data into structured, actionable information. Each processor is designed for specific use cases and data types on the Stellar and Soroban networks.
 
+:::info Component Registry
+For a comprehensive overview of all processors including standalone gRPC services, see the **[Component Registry](../registry/processors.md)**. You can also learn how to [build custom processors](../registry/building-components.md) or explore [complete pipeline examples](../registry/examples.md).
+:::
+
 ## Available Processors
 
 ### Core Ledger & Transaction
@@ -756,6 +760,8 @@ You can chain multiple processors in a single pipeline for complex data processi
 
 ## Next Steps
 
-- Explore individual processor documentation for detailed configuration options
+- **[Component Registry](../registry/overview.md)** - Browse all sources, processors, and sinks
+- **[Building Custom Processors](../registry/building-components.md)** - Create your own processors
+- **[Pipeline Examples](../registry/examples.md)** - Complete pipeline configurations
 - Learn about [consumers](../consumers/) to deliver your processed data
 - Check our [Getting Started Guide](../getting-started/quickstart.md) for hands-on examples

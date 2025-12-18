@@ -1,0 +1,51 @@
+.codeBlockContainer {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.codeBlockTitle {
+  background-color: var(--stripe-gray-100);
+  border-bottom: 1px solid var(--stripe-border);
+  color: var(--stripe-gray-900);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.codeBlock {
+  --ifm-pre-background: var(--prism-background-color);
+  margin: 0;
+  padding: 0;
+}
+
+.codeBlockStandalone {
+  padding: 0;
+}
+
+.codeBlockLines {
+  font: inherit;
+  /* rtl:ignore */
+  float: left;
+  min-width: 100%;
+  padding: var(--spacing-md);
+}
+
+.codeBlockLinesWithNumbering {
+  display: table;
+  padding: var(--spacing-md) 0;
+}
+
+[data-theme='dark'] .codeBlockTitle {
+  background-color: var(--stripe-bg-secondary);
+  border-bottom-color: var(--stripe-border);
+  color: var(--stripe-gray-700);
+}
+
+@media print {
+  .codeBlockLines {
+    white-space: pre-wrap;
+  }
+}
+

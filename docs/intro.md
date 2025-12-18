@@ -6,14 +6,14 @@ sidebar_position: 1
 
 ## **Obsrvr Gateway Overview**
 
-Obsrvr Gateway provides a seamless and secure connection to both the **Stellar** and **Soroban RPC** networks. It allows developers and businesses to interact with both **Mainnet** and **Testnet** environments using dedicated APIs. Whether you are building decentralized applications (dApps) or exploring transaction data, the Obsrvr Gateway ensures easy access to the tools you need.
+Obsrvr Gateway provides a seamless and secure connection to both the **Stellar** and **Stellar RPC** networks. It allows developers and businesses to interact with both **Mainnet** and **Testnet** environments using dedicated APIs. Whether you are building decentralized applications (dApps) or exploring transaction data, the Obsrvr Gateway ensures easy access to the tools you need.
 
 ### **Supported Networks:**
 
 - **Stellar Mainnet:** `https://stellar.nodeswithobsrvr.co/`
 - **Stellar Testnet:** `https://stellar-testnet.nodeswithobsrvr.co/`
-- **Soroban RPC Mainnet:** `https://rpc.nodeswithobsrvr.co/`
-- **Soroban RPC Testnet:** `https://rpc-testnet.nodeswithobsrvr.co/`
+- **Stellar RPC Mainnet:** `https://rpc.nodeswithobsrvr.co/`
+- **Stellar RPC Testnet:** `https://rpc-testnet.nodeswithobsrvr.co/`
 
 These endpoints allow access to their respective networks for interacting with accounts, assets, transactions, and other key data on the Stellar and Soroban networks.
 
@@ -62,12 +62,12 @@ This header ensures that your requests are authorized to access the network reso
 - **Base URL:** `https://stellar-testnet.nodeswithobsrvr.co/`
 - **Usage:** Interact with Stellar’s test network to develop and test applications.
 
-### **Soroban RPC Mainnet:**
+### **Stellar RPC Mainnet:**
 
 - **Base URL:** `https://rpc.nodeswithobsrvr.co/`
 - **Usage:** Execute Soroban smart contracts, and query real-time blockchain data on the main network.
 
-### **Soroban RPC Testnet:**
+### **Stellar RPC Testnet:**
 
 - **Base URL:** `https://rpc-testnet.nodeswithobsrvr.co/`
 - **Usage:** Develop, test, and simulate Soroban smart contracts in a test environment.

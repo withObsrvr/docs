@@ -9,32 +9,52 @@ Pipelines are the core abstraction in Flow, representing a complete data process
 
 ## Pipeline Architecture
 
-A Flow pipeline consists of three main components:
+A Flow pipeline consists of three main component types orchestrated by flowctl:
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Source    │────▶│  Processor   │────▶│  Consumer   │
-│  (Network)  │     │ (Transform)  │     │(Destination)│
-└─────────────┘     └──────────────┘     └─────────────┘
+┌─────────────────────────────────────────────────────────┐
+│              Flow Orchestrator (flowctl)                 │
+│  • Component Management                                 │
+│  • Health Monitoring                                    │
+│  • Stream Coordination                                  │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+      ┌───────────────┼───────────────┐
+      ▼               ▼               ▼
+┌─────────────┐ ┌──────────────┐ ┌─────────────┐
+│   Source    │─▶│  Processor   │─▶│    Sink     │
+│  (Network)  │ │ (Transform)  │ │(Destination)│
+└─────────────┘ └──────────────┘ └─────────────┘
 ```
 
-### 1. Source (Network)
-The blockchain network providing data:
-- **Stellar Mainnet**: Production network
-- **Stellar Testnet**: Development network
+### 1. Source
+Data producers that fetch from blockchain networks:
+- **Stellar Mainnet**: Production network data
+- **Stellar Testnet**: Development network data
+- **Cloud Storage**: Historical data from GCS/S3
 - **Starting Point**: Latest, genesis, or specific ledger
 
 ### 2. Processor
-Transforms raw blockchain data:
+Data transformers that filter and structure blockchain data:
 - Filters relevant information
-- Structures data for consumption
+- Extracts specific events or transactions
 - Can be chained for complex transformations
+- Built using [flowctl-sdk](https://github.com/withObsrvr/flowctl-sdk)
 
-### 3. Consumer
-Delivers processed data to your application:
-- Databases (PostgreSQL, Redis)
-- Streaming (Webhooks, Kafka)
-- Storage (S3, DuckDB)
+### 3. Sink (Consumer)
+Data consumers that deliver to your infrastructure:
+- **Databases**: PostgreSQL, Redis, DuckDB
+- **Streaming**: Webhooks, Kafka, ZeroMQ
+- **Storage**: S3, local files
+- Built using [flowctl-sdk](https://github.com/withObsrvr/flowctl-sdk)
+
+### Orchestration
+
+Flow uses [flowctl](https://github.com/withobsrvr/flowctl) to orchestrate all components:
+- Automatic component registration and health monitoring
+- gRPC-based data streaming between components
+- Graceful error handling and recovery
+- Real-time metrics and observability
 
 ## Pipeline Lifecycle
 
@@ -70,25 +90,51 @@ graph LR
 
 ## Configuration
 
+Flow uses the flowctl configuration format for defining pipelines. This provides a consistent, powerful way to describe your data processing workflows.
+
 ### Basic Configuration
 
 ```yaml
-name: "payment-tracker"
-network: "mainnet"
-start_ledger: "latest"
+apiVersion: flowctl/v1
+kind: Pipeline
+metadata:
+  name: payment-tracker
+  description: Track payments with specific memo patterns
 
-processor:
-  type: "payments_memo"
-  config:
-    memo_text: "REF"
-    min_amount: "100"
+spec:
+  driver: process  # Managed by Flow infrastructure
 
-consumer:
-  type: "postgres"
-  config:
-    connection_string: "postgresql://..."
-    batch_size: 50
+  sources:
+    - id: stellar-source
+      command: ["stellar-live-source"]
+      env:
+        NETWORK: "mainnet"
+        START_LEDGER: "latest"
+
+  processors:
+    - id: payments-filter
+      command: ["payments-memo-processor"]
+      inputs: ["stellar-source"]
+      env:
+        MEMO_TEXT: "REF"
+        MIN_AMOUNT: "100"
+
+  sinks:
+    - id: postgres-sink
+      command: ["postgres-consumer"]
+      inputs: ["payments-filter"]
+      env:
+        CONNECTION_STRING: "postgresql://..."
+        BATCH_SIZE: "50"
 ```
+
+**Key concepts:**
+- `apiVersion: flowctl/v1` - Standard configuration format
+- `spec.driver` - Execution environment (Flow manages this for you)
+- `sources` - Data producers (Stellar network, cloud storage)
+- `processors` - Data transformers (filters, extractors)
+- `sinks` - Data consumers (databases, webhooks)
+- `inputs` - Explicit connections between components
 
 ### Advanced Configuration
 
@@ -98,26 +144,43 @@ Chain processors for complex logic:
 
 ```yaml
 processors:
-  - type: "contract_filter"
-    config:
-      contract_ids: ["CCTOKEN..."]
-  - type: "contract_event"
-    config: {}
+  - id: contract-filter
+    command: ["contract-filter-processor"]
+    inputs: ["stellar-source"]
+    env:
+      CONTRACT_IDS: "CCTOKEN..."
+
+  - id: event-extractor
+    command: ["contract-event-processor"]
+    inputs: ["contract-filter"]  # Chain from filter
+    env:
+      EXTRACT_ALL: "true"
 ```
 
-#### Multiple Consumers
+#### Multiple Sinks (Fan-Out)
 
 Send data to multiple destinations:
 
 ```yaml
-consumers:
-  - type: "postgres"
-    config:
-      connection_string: "postgresql://..."
-  - type: "webhook"
-    config:
-      url: "https://api.example.com/events"
+sinks:
+  - id: postgres-sink
+    command: ["postgres-consumer"]
+    inputs: ["event-extractor"]
+    env:
+      CONNECTION_STRING: "postgresql://..."
+      BATCH_SIZE: "50"
+
+  - id: webhook-sink
+    command: ["webhook-consumer"]
+    inputs: ["event-extractor"]  # Same input as postgres
+    env:
+      URL: "https://api.example.com/events"
+      RETRY_COUNT: "3"
 ```
+
+### Configuration via Flow Console
+
+When using the Flow Console UI, the configuration is generated automatically based on your selections. For advanced use cases or self-hosted deployments, you can write the YAML directly.
 
 ## Data Flow Patterns
 

@@ -182,46 +182,68 @@ Plan for event schema evolution:
 
 ### DeFi Analytics Dashboard
 
-```json
-{
-  "processors": [
-    {
-      "type": "contract_filter",
-      "config": {
-        "contract_ids": ["CC_DEX_CONTRACT_ID..."]
-      }
-    },
-    {
-      "type": "contract_event"
-    }
-  ],
-  "consumer": {
-    "type": "postgres",
-    "config": {
-      "connection_string": "postgresql://...",
-      "table_name": "dex_events"
-    }
-  }
-}
+```yaml
+apiVersion: flowctl/v1
+kind: Pipeline
+metadata:
+  name: dex-analytics
+  description: Track DEX contract events
+
+spec:
+  sources:
+    - id: stellar-source
+      command: ["stellar-live-source"]
+      env:
+        NETWORK: "mainnet"
+
+  processors:
+    - id: contract-filter
+      command: ["contract-filter-processor"]
+      inputs: ["stellar-source"]
+      env:
+        CONTRACT_IDS: "CC_DEX_CONTRACT_ID..."
+
+    - id: event-extractor
+      command: ["contract-event-processor"]
+      inputs: ["contract-filter"]
+
+  sinks:
+    - id: postgres-analytics
+      command: ["postgres-consumer"]
+      inputs: ["event-extractor"]
+      env:
+        CONNECTION_STRING: "postgresql://..."
+        TABLE_NAME: "dex_events"
 ```
 
 ### Real-time Notifications
 
-```json
-{
-  "processors": [
-    {
-      "type": "contract_event"
-    }
-  ],
-  "consumer": {
-    "type": "webhook",
-    "config": {
-      "url": "https://api.example.com/contract-events",
-      "batch_size": 1
-    }
-  }
-}
+```yaml
+apiVersion: flowctl/v1
+kind: Pipeline
+metadata:
+  name: contract-event-notifications
+  description: Real-time contract event webhooks
+
+spec:
+  sources:
+    - id: stellar-source
+      command: ["stellar-live-source"]
+      env:
+        NETWORK: "mainnet"
+
+  processors:
+    - id: event-extractor
+      command: ["contract-event-processor"]
+      inputs: ["stellar-source"]
+
+  sinks:
+    - id: webhook-notifier
+      command: ["webhook-consumer"]
+      inputs: ["event-extractor"]
+      env:
+        URL: "https://api.example.com/contract-events"
+        BATCH_SIZE: "1"
 ```
 
 ## Performance Considerations

@@ -13,11 +13,39 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         pkgs-node18 = nixpkgs-node18.legacyPackages.${system};
-        
+
         # Use Node.js 18 from the older nixpkgs
         nodejs = pkgs-node18.nodejs_18;
         # Use yarn from current nixpkgs but override with our Node.js 18
         yarn = pkgs.yarn.override { inherit nodejs; };
+
+        # Playwright runtime dependencies
+        playwrightRuntimeDeps = with pkgs; [
+          glib
+          nss
+          nspr
+          dbus
+          atk
+          at-spi2-core
+          at-spi2-atk
+          cups
+          libdrm
+          expat
+          libxkbcommon
+          xorg.libxcb
+          xorg.libX11
+          xorg.libXcomposite
+          xorg.libXdamage
+          xorg.libXext
+          xorg.libXfixes
+          xorg.libXrandr
+          mesa
+          libgbm  # Explicitly add libgbm for Chromium
+          pango
+          cairo
+          alsa-lib
+          systemd  # For libudev
+        ];
       in
       {
         devShells.default = pkgs.mkShell {
@@ -25,10 +53,11 @@
             nodejs
             yarn
             git
+            playwright-driver
             # Optional: Additional tools that might be useful
             nodePackages.npm-check-updates
             nodePackages.serve
-          ];
+          ] ++ playwrightRuntimeDeps;
 
           shellHook = ''
             # Set custom prompt
@@ -42,13 +71,17 @@
             echo "  yarn start      - Start development server"
             echo "  yarn build      - Build for production"
             echo "  yarn serve      - Serve production build"
+            echo "  yarn test       - Run Playwright tests"
             echo ""
-            
+
             # Set up Node.js environment
             export NODE_ENV=development
-            
+
             # Ensure node_modules/.bin is in PATH for locally installed packages
             export PATH="$PWD/node_modules/.bin:$PATH"
+
+            # Set up Playwright runtime library path
+            export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath playwrightRuntimeDeps}:$LD_LIBRARY_PATH
             
             # Create a local tmp directory for Node.js if needed
             export TMPDIR="$PWD/.tmp"

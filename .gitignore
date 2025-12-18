@@ -25,3 +25,12 @@ yarn-error.log*
 .tmp/
 .npm-global/
 .yarn-global/
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+obsrvr-screenshots/examples/*.png
+stripe-screenshots/examples/
+
