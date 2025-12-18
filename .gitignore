@@ -25,3 +25,9 @@ yarn-error.log*
 .tmp/
 .npm-global/
 .yarn-global/
+
+# docs
+obsrvr-screenshots/
+stripe-screenshots/
+playwright-report/
+.last-run.json
