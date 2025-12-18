@@ -5,11 +5,11 @@ title: Consumers Overview
 
 # Consumers
 
-Consumers are the destination components in Flow pipelines that receive processed blockchain data and deliver it to your applications, databases, or storage systems. Each consumer is optimized for specific use cases and integration patterns.
+Consumers (Sinks) are the destination components in Flow pipelines that receive processed blockchain data and deliver it to your applications, databases, or storage systems. Each consumer is optimized for specific use cases and integration patterns.
 
 ## Available Consumers
 
-### Database Storage - PostgreSQL
+### Database Storage -  PostgreSQL
 
 #### [PostgreSQL (Generic)](./postgresql.md)
 General-purpose PostgreSQL consumer for ledger data with flexible JSON format.
