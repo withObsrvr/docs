@@ -5,717 +5,737 @@ title: Building Custom Components
 
 # Building Custom Components
 
-This guide shows you how to build custom sources, processors, and sinks for Obsrvr Flow pipelines.
+Build custom sources, processors, and sinks for Flow pipelines using the flowctl-sdk. This guide shows you how to create production-ready components that work with both Obsrvr Flow (managed) and self-hosted flowctl deployments.
+
+## Prerequisites
+
+- **Go 1.21+** - For building components
+- **Git** - For cloning the SDK
+- **Docker** (optional) - For containerized deployments
+
+## Getting Started
+
+### Install flowctl-sdk
+
+```bash
+# Clone the SDK
+git clone https://github.com/withObsrvr/flowctl-sdk.git
+cd flowctl-sdk
+
+# Explore examples
+ls -la examples/
+```
+
+The SDK provides packages for building all component types:
+- `pkg/source` - Data producers
+- `pkg/processor` - Data transformers
+- `pkg/consumer` - Data consumers (legacy)
+- `pkg/sink` - Data consumers (new)
 
 ## Architecture Overview
 
-Components can be built in two ways:
+Components are **separate programs** that implement the flowctl component interface:
 
-### 1. Standalone Components (gRPC Microservices)
-
-Independent services that communicate via gRPC. Best for:
-- Multi-language support
-- Distributed deployments
-- Team autonomy
-- Independent scaling
-
-### 2. Embedded Components (Go Library)
-
-Built into the `cdp-pipeline-workflow` binary. Best for:
-- Single-machine deployments
-- Lower latency
-- Simpler operations
-- Rapid development
-
----
-
-## Building a Standalone Component
-
-### Prerequisites
-
-- Go 1.21+
-- Protocol Buffers compiler (`protoc`)
-- Docker (optional, for containerization)
-
-### Step 1: Define Your Component Manifest
-
-Create a `component.yaml` file:
-
-```yaml
-apiVersion: component.flowctl.io/v1
-kind: ComponentSpec
-
-metadata:
-  name: my-custom-processor
-  version: "1.0.0"
-  namespace: myorg
-  description: "Custom processor for my use case"
-  author: "Your Name"
-  license: "Apache-2.0"
-  tags:
-    - processor
-    - custom
-
-spec:
-  type: processor  # or source, sink
-
-  execution:
-    modes: [container, native]
-    default: container
-
-  languages:
-    go:
-      version: "1.23"
-      native_build:
-        enabled: true
-        build_command: "go build -o my-processor ./src"
-        binary_path: "./my-processor"
-
-  interface:
-    upstream:
-      type: grpc
-      port: 8815
-      protocol: stellar-ledger
-
-    downstream:
-      type: grpc
-      port: 8816
-      protocol: processed-events
-
-  config:
-    properties:
-      network:
-        type: string
-        enum: ["testnet", "mainnet"]
-        required: true
-      batch_size:
-        type: integer
-        default: 100
-        minimum: 1
-        maximum: 1000
-
-  resources:
-    requests:
-      cpu: "500m"
-      memory: "512Mi"
-    limits:
-      cpu: "2000m"
-      memory: "2Gi"
-
-  health:
-    readiness:
-      http:
-        path: /health/ready
-        port: 8088
-    liveness:
-      http:
-        path: /health/live
-        port: 8088
+```
+┌──────────────────────────────────────────────┐
+│              Your Component                   │
+├──────────────────────────────────────────────┤
+│                                              │
+│  ┌────────────────────────────────────┐    │
+│  │   Business Logic                   │    │
+│  │   (Your code)                      │    │
+│  └────────────────┬───────────────────┘    │
+│                   │                         │
+│                   ▼                         │
+│  ┌────────────────────────────────────┐    │
+│  │   flowctl-sdk                      │    │
+│  │   • gRPC server setup              │    │
+│  │   • Registration & heartbeats      │    │
+│  │   • Health checks                  │    │
+│  │   • Graceful shutdown              │    │
+│  └────────────────────────────────────┘    │
+│                                              │
+└──────────────────────────────────────────────┘
 ```
 
-### Step 2: Define Your Protobuf Interface
+**You focus on:** The business logic of processing data
 
-Create `protos/my_service.proto`:
+**SDK handles:** Infrastructure, networking, health monitoring, registration
 
-```protobuf
-syntax = "proto3";
+## Building a Source
 
-package myservice;
+Sources produce data for the pipeline (e.g., API polling, database streaming).
 
-option go_package = "github.com/myorg/my-component/gen/myservice";
-
-// Input from upstream source
-message RawLedger {
-    uint32 ledger_sequence = 1;
-    bytes ledger_close_meta_xdr = 2;
-}
-
-// Output to downstream consumers
-message ProcessedEvent {
-    uint32 ledger_sequence = 1;
-    string transaction_hash = 2;
-    string event_type = 3;
-    bytes event_data = 4;
-    int64 timestamp = 5;
-}
-
-service MyProcessorService {
-    // Receive ledgers from source
-    rpc StreamLedgers(stream RawLedger) returns (stream ProcessedEvent) {}
-}
-```
-
-### Step 3: Implement Your Processor
-
-Create `src/processor.go`:
+### Basic Source Example
 
 ```go
 package main
 
 import (
     "context"
-    "fmt"
-    "io"
     "log"
-    "net"
+    "time"
 
-    "google.golang.org/grpc"
-    pb "github.com/myorg/my-component/gen/myservice"
-    "github.com/stellar/go/xdr"
+    "github.com/withObsrvr/flowctl-sdk/pkg/source"
+    flowpb "github.com/withObsrvr/flow-proto/gen/go/flow/v1"
 )
 
-type ProcessorServer struct {
-    pb.UnimplementedMyProcessorServiceServer
-    config Config
-}
-
-type Config struct {
-    Network   string
-    BatchSize int
-}
-
-func (s *ProcessorServer) StreamLedgers(stream pb.MyProcessorService_StreamLedgersServer) error {
-    for {
-        // Receive raw ledger from upstream
-        rawLedger, err := stream.Recv()
-        if err == io.EOF {
-            return nil
-        }
-        if err != nil {
-            return err
-        }
-
-        // Process the ledger
-        events, err := s.processLedger(rawLedger)
-        if err != nil {
-            log.Printf("Error processing ledger %d: %v", rawLedger.LedgerSequence, err)
-            continue
-        }
-
-        // Send processed events downstream
-        for _, event := range events {
-            if err := stream.Send(event); err != nil {
-                return err
-            }
-        }
-    }
-}
-
-func (s *ProcessorServer) processLedger(rawLedger *pb.RawLedger) ([]*pb.ProcessedEvent, error) {
-    // Unmarshal XDR
-    var ledgerCloseMeta xdr.LedgerCloseMeta
-    if err := ledgerCloseMeta.UnmarshalBinary(rawLedger.LedgerCloseMetaXdr); err != nil {
-        return nil, fmt.Errorf("failed to unmarshal XDR: %w", err)
-    }
-
-    var events []*pb.ProcessedEvent
-
-    // Extract events from transactions
-    if ledgerCloseMeta.V == 1 {
-        for _, txResult := range ledgerCloseMeta.V1.TxProcessing {
-            // Your custom processing logic here
-            event := &pb.ProcessedEvent{
-                LedgerSequence:  rawLedger.LedgerSequence,
-                TransactionHash: fmt.Sprintf("%x", txResult.TransactionHash),
-                EventType:       "my_custom_event",
-                EventData:       []byte("processed data"),
-                Timestamp:       ledgerCloseMeta.V1.LedgerHeader.Header.ScpValue.CloseTime,
-            }
-            events = append(events, event)
-        }
-    }
-
-    return events, nil
-}
-
 func main() {
-    // Load configuration
-    config := Config{
-        Network:   getEnv("NETWORK", "testnet"),
-        BatchSize: getEnvInt("BATCH_SIZE", 100),
-    }
+    // Create source with configuration
+    src := source.New(source.Config{
+        Name:        "my-api-source",
+        Description: "Polls external API for events",
+        Version:     "1.0.0",
+        OutputType:  "myorg.api.event.v1",
+    })
 
-    // Create gRPC server
-    lis, err := net.Listen("tcp", ":8816")
-    if err != nil {
-        log.Fatalf("failed to listen: %v", err)
-    }
+    // Set the data production function
+    src.SetProduceFunc(produceData)
 
-    grpcServer := grpc.NewServer()
-    processorServer := &ProcessorServer{config: config}
-    pb.RegisterMyProcessorServiceServer(grpcServer, processorServer)
-
-    log.Printf("Processor listening on :8816")
-    if err := grpcServer.Serve(lis); err != nil {
-        log.Fatalf("failed to serve: %v", err)
+    // Run the source (blocks until shutdown)
+    if err := src.Run(); err != nil {
+        log.Fatalf("Source failed: %v", err)
     }
 }
 
-func getEnv(key, defaultVal string) string {
-    if val := os.Getenv(key); val != "" {
-        return val
-    }
-    return defaultVal
-}
+// produceData is called to generate events
+func produceData(ctx context.Context) ([]*flowpb.Event, error) {
+    // TODO: Fetch data from your source
+    // This could be: API call, database query, message queue, etc.
 
-func getEnvInt(key string, defaultVal int) int {
-    if val := os.Getenv(key); val != "" {
-        if i, err := strconv.Atoi(val); err == nil {
-            return i
-        }
+    events := make([]*flowpb.Event, 0)
+
+    // Example: Create an event
+    event := &flowpb.Event{
+        Id:        "event-" + time.Now().Format("20060102150405"),
+        Type:      "myorg.api.event.v1",
+        Timestamp: time.Now().Unix(),
+        Data:      []byte(`{"key": "value"}`),
     }
-    return defaultVal
+
+    events = append(events, event)
+    return events, nil
 }
 ```
 
-### Step 4: Add Health Checks
-
-Create `src/health.go`:
+### Real-World Source Example: API Poller
 
 ```go
 package main
 
 import (
+    "context"
     "encoding/json"
+    "fmt"
+    "io"
+    "log"
     "net/http"
+    "os"
+    "time"
+
+    "github.com/withObsrvr/flowctl-sdk/pkg/source"
+    flowpb "github.com/withObsrvr/flow-proto/gen/go/flow/v1"
 )
 
-type HealthStatus struct {
-    Status  string `json:"status"`
-    Version string `json:"version"`
+type APIResponse struct {
+    ID        string    `json:"id"`
+    Timestamp time.Time `json:"timestamp"`
+    Data      string    `json:"data"`
 }
 
-func startHealthServer() {
-    http.HandleFunc("/health/ready", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(HealthStatus{
-            Status:  "ready",
-            Version: "1.0.0",
-        })
+func main() {
+    apiEndpoint := os.Getenv("API_ENDPOINT")
+    pollInterval := getEnvDuration("POLL_INTERVAL", 5*time.Second)
+
+    src := source.New(source.Config{
+        Name:        "api-poller-source",
+        Description: "Polls external API for events",
+        Version:     "1.0.0",
+        OutputType:  "myorg.api.event.v1",
     })
 
-    http.HandleFunc("/health/live", func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(HealthStatus{
-            Status:  "alive",
-            Version: "1.0.0",
-        })
+    src.SetProduceFunc(func(ctx context.Context) ([]*flowpb.Event, error) {
+        // Wait for poll interval
+        time.Sleep(pollInterval)
+
+        // Call API
+        resp, err := http.Get(apiEndpoint)
+        if err != nil {
+            return nil, fmt.Errorf("API call failed: %w", err)
+        }
+        defer resp.Body.Close()
+
+        body, err := io.ReadAll(resp.Body)
+        if err != nil {
+            return nil, fmt.Errorf("reading response failed: %w", err)
+        }
+
+        var apiResp APIResponse
+        if err := json.Unmarshal(body, &apiResp); err != nil {
+            return nil, fmt.Errorf("parsing response failed: %w", err)
+        }
+
+        // Convert to flowctl event
+        event := &flowpb.Event{
+            Id:        apiResp.ID,
+            Type:      "myorg.api.event.v1",
+            Timestamp: apiResp.Timestamp.Unix(),
+            Data:      body,
+        }
+
+        log.Printf("Produced event: %s", event.Id)
+        return []*flowpb.Event{event}, nil
     })
 
-    go http.ListenAndServe(":8088", nil)
+    if err := src.Run(); err != nil {
+        log.Fatalf("Source failed: %v", err)
+    }
+}
+
+func getEnvDuration(key string, defaultVal time.Duration) time.Duration {
+    val := os.Getenv(key)
+    if val == "" {
+        return defaultVal
+    }
+    duration, err := time.ParseDuration(val)
+    if err != nil {
+        log.Printf("Invalid duration for %s: %v, using default", key, err)
+        return defaultVal
+    }
+    return duration
 }
 ```
 
-### Step 5: Create Dockerfile
+### Configuration
+
+```yaml
+sources:
+  - id: api-poller
+    command: ["/path/to/bin/api-poller"]
+    env:
+      # flowctl integration
+      ENABLE_FLOWCTL: "true"
+      FLOWCTL_ENDPOINT: "127.0.0.1:8080"
+      PORT: ":50051"
+      HEALTH_PORT: "8088"
+
+      # Source-specific config
+      API_ENDPOINT: "https://api.example.com/events"
+      POLL_INTERVAL: "5s"
+```
+
+## Building a Processor
+
+Processors transform data as it flows through the pipeline.
+
+### Basic Processor Example
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/withObsrvr/flowctl-sdk/pkg/processor"
+    flowpb "github.com/withObsrvr/flow-proto/gen/go/flow/v1"
+)
+
+func main() {
+    proc := processor.New(processor.Config{
+        Name:        "my-processor",
+        Description: "Transforms events",
+        Version:     "1.0.0",
+        InputType:   "myorg.data.v1",
+        OutputType:  "myorg.processed.v1",
+    })
+
+    // Set the processing function
+    proc.SetProcessFunc(processEvent)
+
+    // Run the processor
+    if err := proc.Run(); err != nil {
+        log.Fatalf("Processor failed: %v", err)
+    }
+}
+
+// processEvent transforms a single event
+func processEvent(ctx context.Context, event *flowpb.Event) ([]*flowpb.Event, error) {
+    // Transform the event
+    transformedEvent := &flowpb.Event{
+        Id:        event.Id + "-processed",
+        Type:      "myorg.processed.v1",
+        Timestamp: event.Timestamp,
+        Data:      event.Data, // Add your transformation logic
+    }
+
+    return []*flowpb.Event{transformedEvent}, nil
+}
+```
+
+### Real-World Processor Example: Event Filter
+
+```go
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "log"
+    "os"
+    "strings"
+
+    "github.com/withObsrvr/flowctl-sdk/pkg/processor"
+    flowpb "github.com/withObsrvr/flow-proto/gen/go/flow/v1"
+)
+
+type EventData struct {
+    Type   string `json:"type"`
+    Value  string `json:"value"`
+    Status string `json:"status"`
+}
+
+func main() {
+    filterType := os.Getenv("FILTER_TYPE")
+    filterStatus := os.Getenv("FILTER_STATUS")
+
+    proc := processor.New(processor.Config{
+        Name:        "event-filter",
+        Description: "Filters events by type and status",
+        Version:     "1.0.0",
+        InputType:   "myorg.event.v1",
+        OutputType:  "myorg.event.v1",
+    })
+
+    proc.SetProcessFunc(func(ctx context.Context, event *flowpb.Event) ([]*flowpb.Event, error) {
+        // Parse event data
+        var data EventData
+        if err := json.Unmarshal(event.Data, &data); err != nil {
+            log.Printf("Failed to parse event %s: %v", event.Id, err)
+            return nil, nil // Skip invalid events
+        }
+
+        // Apply filters
+        if filterType != "" && !strings.EqualFold(data.Type, filterType) {
+            return nil, nil // Filter out
+        }
+
+        if filterStatus != "" && !strings.EqualFold(data.Status, filterStatus) {
+            return nil, nil // Filter out
+        }
+
+        log.Printf("Event %s passed filter", event.Id)
+        return []*flowpb.Event{event}, nil // Pass through
+    })
+
+    if err := proc.Run(); err != nil {
+        log.Fatalf("Processor failed: %v", err)
+    }
+}
+```
+
+### Configuration
+
+```yaml
+processors:
+  - id: event-filter
+    command: ["/path/to/bin/event-filter"]
+    inputs: ["source-id"]
+    env:
+      ENABLE_FLOWCTL: "true"
+      FLOWCTL_ENDPOINT: "127.0.0.1:8080"
+      PORT: ":50052"
+      HEALTH_PORT: "8089"
+
+      # Processor-specific config
+      FILTER_TYPE: "transfer"
+      FILTER_STATUS: "success"
+```
+
+## Building a Sink
+
+Sinks consume data and write to storage or external systems.
+
+### Basic Sink Example
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/withObsrvr/flowctl-sdk/pkg/consumer"
+    flowpb "github.com/withObsrvr/flow-proto/gen/go/flow/v1"
+)
+
+func main() {
+    sink := consumer.New(consumer.Config{
+        Name:        "my-sink",
+        Description: "Writes events to storage",
+        Version:     "1.0.0",
+        InputType:   "myorg.processed.v1",
+    })
+
+    // Set the consumption function
+    sink.SetConsumeFunc(consumeEvent)
+
+    // Run the sink
+    if err := sink.Run(); err != nil {
+        log.Fatalf("Sink failed: %v", err)
+    }
+}
+
+// consumeEvent writes a single event
+func consumeEvent(ctx context.Context, event *flowpb.Event) error {
+    // Write event to storage
+    log.Printf("Consumed event: %s", event.Id)
+    return nil
+}
+```
+
+### Real-World Sink Example: PostgreSQL
+
+```go
+package main
+
+import (
+    "context"
+    "database/sql"
+    "encoding/json"
+    "fmt"
+    "log"
+    "os"
+
+    _ "github.com/lib/pq"
+    "github.com/withObsrvr/flowctl-sdk/pkg/consumer"
+    flowpb "github.com/withObsrvr/flow-proto/gen/go/flow/v1"
+)
+
+type EventData struct {
+    Type      string `json:"type"`
+    Value     string `json:"value"`
+    Status    string `json:"status"`
+    Timestamp int64  `json:"timestamp"`
+}
+
+func main() {
+    // Database configuration
+    dbHost := os.Getenv("POSTGRES_HOST")
+    dbPort := os.Getenv("POSTGRES_PORT")
+    dbName := os.Getenv("POSTGRES_DB")
+    dbUser := os.Getenv("POSTGRES_USER")
+    dbPass := os.Getenv("POSTGRES_PASSWORD")
+
+    // Connect to PostgreSQL
+    connStr := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=disable",
+        dbHost, dbPort, dbName, dbUser, dbPass)
+
+    db, err := sql.Open("postgres", connStr)
+    if err != nil {
+        log.Fatalf("Database connection failed: %v", err)
+    }
+    defer db.Close()
+
+    // Verify connection
+    if err := db.Ping(); err != nil {
+        log.Fatalf("Database ping failed: %v", err)
+    }
+
+    // Create table if not exists
+    createTable := `
+        CREATE TABLE IF NOT EXISTS events (
+            id TEXT PRIMARY KEY,
+            type TEXT NOT NULL,
+            value TEXT,
+            status TEXT,
+            timestamp BIGINT,
+            raw_data JSONB,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        )
+    `
+    if _, err := db.Exec(createTable); err != nil {
+        log.Fatalf("Table creation failed: %v", err)
+    }
+
+    // Create sink
+    sink := consumer.New(consumer.Config{
+        Name:        "postgresql-sink",
+        Description: "Writes events to PostgreSQL",
+        Version:     "1.0.0",
+        InputType:   "myorg.event.v1",
+    })
+
+    sink.SetConsumeFunc(func(ctx context.Context, event *flowpb.Event) error {
+        // Parse event data
+        var data EventData
+        if err := json.Unmarshal(event.Data, &data); err != nil {
+            return fmt.Errorf("failed to parse event: %w", err)
+        }
+
+        // Insert into database
+        query := `
+            INSERT INTO events (id, type, value, status, timestamp, raw_data)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (id) DO UPDATE SET
+                type = EXCLUDED.type,
+                value = EXCLUDED.value,
+                status = EXCLUDED.status,
+                timestamp = EXCLUDED.timestamp,
+                raw_data = EXCLUDED.raw_data
+        `
+
+        _, err := db.ExecContext(ctx, query,
+            event.Id,
+            data.Type,
+            data.Value,
+            data.Status,
+            data.Timestamp,
+            event.Data,
+        )
+
+        if err != nil {
+            return fmt.Errorf("database insert failed: %w", err)
+        }
+
+        log.Printf("Inserted event: %s", event.Id)
+        return nil
+    })
+
+    if err := sink.Run(); err != nil {
+        log.Fatalf("Sink failed: %v", err)
+    }
+}
+```
+
+### Configuration
+
+```yaml
+sinks:
+  - id: postgresql-sink
+    command: ["/path/to/bin/postgresql-sink"]
+    inputs: ["processor-id"]
+    env:
+      ENABLE_FLOWCTL: "true"
+      FLOWCTL_ENDPOINT: "127.0.0.1:8080"
+      PORT: ":50053"
+      HEALTH_PORT: "8090"
+
+      # Database configuration
+      POSTGRES_HOST: "localhost"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "events_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+```
+
+## Building and Testing
+
+### Build Your Component
+
+```bash
+# Build binary
+go build -o bin/my-component main.go
+
+# Make executable
+chmod +x bin/my-component
+
+# Test standalone
+ENABLE_FLOWCTL=false PORT=:50051 ./bin/my-component
+```
+
+### Create Docker Image
 
 Create `Dockerfile`:
 
 ```dockerfile
-FROM golang:1.23-alpine AS builder
-
-# Install dependencies
-RUN apk add --no-cache git gcc musl-dev protobuf-dev
-
+FROM golang:1.21-alpine AS builder
 WORKDIR /app
-
-# Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
-
-# Copy source code
 COPY . .
+RUN go build -o bin/my-component main.go
 
-# Build the application
-RUN go build -o /my-processor ./src
-
-# Final stage
 FROM alpine:latest
-
-RUN apk add --no-cache ca-certificates
-
-COPY --from=builder /my-processor /usr/local/bin/
-
-EXPOSE 8816 8088
-
-ENTRYPOINT ["my-processor"]
+RUN apk --no-cache add ca-certificates
+WORKDIR /app
+COPY --from=builder /app/bin/my-component .
+ENTRYPOINT ["./my-component"]
 ```
 
-### Step 6: Build and Test
+Build and push:
 
 ```bash
-# Generate protobuf code
-protoc --go_out=. --go-grpc_out=. protos/my_service.proto
-
-# Build binary
-go build -o my-processor ./src
-
-# Build Docker image
-docker build -t myorg/my-processor:1.0.0 .
+# Build image
+docker build -t myorg/my-component:1.0.0 .
 
 # Test locally
-docker run -p 8816:8816 -p 8088:8088 \
-  -e NETWORK=testnet \
-  -e BATCH_SIZE=100 \
-  myorg/my-processor:1.0.0
+docker run -p 50051:50051 -p 8088:8088 \
+  -e ENABLE_FLOWCTL=false \
+  myorg/my-component:1.0.0
+
+# Push to registry
+docker push myorg/my-component:1.0.0
 ```
 
-### Step 7: Use in Pipeline
+## Using in Pipelines
+
+### Standard Pipeline Configuration
 
 Create `pipeline.yaml`:
 
 ```yaml
-apiVersion: flowctl.io/v1
+apiVersion: flowctl/v1
 kind: Pipeline
 metadata:
-  name: custom-processor-pipeline
+  name: custom-component-pipeline
+  description: Pipeline using custom components
 
 spec:
+  driver: process  # or docker, kubernetes, nomad
+
   sources:
-    - id: stellar-source
-      type: stellar-live-source-datalake
-      image: docker.io/withobsrvr/stellar-live-source-datalake:latest
+    - id: my-source
+      command: ["/path/to/bin/my-source"]
       env:
-        STORAGE_TYPE: "GCS"
-        BUCKET_NAME: "stellar-ledgers"
+        ENABLE_FLOWCTL: "true"
+        FLOWCTL_ENDPOINT: "127.0.0.1:8080"
+        PORT: ":50051"
+        HEALTH_PORT: "8088"
 
   processors:
     - id: my-processor
-      type: my-custom-processor
-      image: docker.io/myorg/my-processor:1.0.0
-      inputs: ["stellar-source"]
+      command: ["/path/to/bin/my-processor"]
+      inputs: ["my-source"]
       env:
-        NETWORK: "testnet"
-        BATCH_SIZE: "100"
+        ENABLE_FLOWCTL: "true"
+        FLOWCTL_ENDPOINT: "127.0.0.1:8080"
+        PORT: ":50052"
+        HEALTH_PORT: "8089"
 
   sinks:
-    - id: postgres-sink
-      type: postgres
+    - id: my-sink
+      command: ["/path/to/bin/my-sink"]
       inputs: ["my-processor"]
-      config:
-        connection_string: "postgresql://localhost:5432/mydb"
+      env:
+        ENABLE_FLOWCTL: "true"
+        FLOWCTL_ENDPOINT: "127.0.0.1:8080"
+        PORT: ":50053"
+        HEALTH_PORT: "8090"
 ```
 
----
-
-## Building an Embedded Component
-
-### Step 1: Add to cdp-pipeline-workflow
-
-Clone the repository:
+### Run with flowctl
 
 ```bash
-git clone https://github.com/withObsrvr/cdp-pipeline-workflow.git
-cd cdp-pipeline-workflow
+# Install flowctl
+go install github.com/withobsrvr/flowctl/cmd/flowctl@latest
+
+# Run pipeline
+flowctl run pipeline.yaml
+
+# With debug logging
+flowctl run pipeline.yaml --log-level=debug
 ```
-
-### Step 2: Create Your Processor
-
-Create `processor/processor_my_custom.go`:
-
-```go
-package processor
-
-import (
-    "context"
-    "fmt"
-
-    "github.com/stellar/go/xdr"
-)
-
-type MyCustomProcessor struct {
-    config MyCustomConfig
-}
-
-type MyCustomConfig struct {
-    Network   string
-    BatchSize int
-}
-
-func NewMyCustomProcessor(config map[string]interface{}) (*MyCustomProcessor, error) {
-    network, _ := config["network"].(string)
-    batchSize, _ := config["batch_size"].(int)
-
-    return &MyCustomProcessor{
-        config: MyCustomConfig{
-            Network:   network,
-            BatchSize: batchSize,
-        },
-    }, nil
-}
-
-func (p *MyCustomProcessor) Process(ctx context.Context, msg interface{}) ([]interface{}, error) {
-    // Type assert to LedgerCloseMeta
-    ledgerMeta, ok := msg.(*xdr.LedgerCloseMeta)
-    if !ok {
-        return nil, fmt.Errorf("expected *xdr.LedgerCloseMeta, got %T", msg)
-    }
-
-    var results []interface{}
-
-    // Your processing logic here
-    if ledgerMeta.V == 1 {
-        for _, txResult := range ledgerMeta.V1.TxProcessing {
-            // Extract and process data
-            result := map[string]interface{}{
-                "ledger":      ledgerMeta.V1.LedgerHeader.Header.LedgerSeq,
-                "tx_hash":     fmt.Sprintf("%x", txResult.TransactionHash),
-                "event_type":  "my_custom_event",
-                "timestamp":   ledgerMeta.V1.LedgerHeader.Header.ScpValue.CloseTime,
-            }
-            results = append(results, result)
-        }
-    }
-
-    return results, nil
-}
-
-func (p *MyCustomProcessor) Subscribe(ch chan interface{}) {
-    // Subscribe logic if needed
-}
-```
-
-### Step 3: Register Your Processor
-
-Add to `factory.go`:
-
-```go
-func CreateProcessor(processorType string, config map[string]interface{}) (Processor, error) {
-    switch processorType {
-    // ... existing cases ...
-    case "MyCustomProcessor":
-        return processor.NewMyCustomProcessor(config)
-    // ... rest of cases ...
-    }
-}
-```
-
-### Step 4: Add Configuration Types
-
-Add to `processor/processor_types.go`:
-
-```go
-const (
-    // ... existing types ...
-    ProcessorTypeMyCustom ProcessorType = "MyCustomProcessor"
-)
-```
-
-### Step 5: Use in Configuration
-
-Create `config.yaml`:
-
-```yaml
-pipelines:
-  MyCustomPipeline:
-    source:
-      type: BufferedStorageSourceAdapter
-      config:
-        bucket_name: "stellar-ledgers/testnet"
-        network: "testnet"
-        start_ledger: 1465402
-
-    processors:
-      - type: MyCustomProcessor
-        config:
-          network: "testnet"
-          batch_size: 100
-
-    consumers:
-      - type: SaveToPostgreSQL
-        config:
-          host: "localhost"
-          database: "mydb"
-```
-
-### Step 6: Build and Run
-
-```bash
-# Build
-go build -o pipeline
-
-# Run
-./pipeline run config.yaml
-```
-
----
 
 ## Best Practices
 
 ### Error Handling
 
 ```go
-func (p *MyProcessor) Process(ctx context.Context, msg interface{}) ([]interface{}, error) {
-    // Always check context cancellation
+func processEvent(ctx context.Context, event *flowpb.Event) ([]*flowpb.Event, error) {
+    // Check context cancellation
     select {
     case <-ctx.Done():
         return nil, ctx.Err()
     default:
     }
 
-    // Type assertions with checks
-    ledgerMeta, ok := msg.(*xdr.LedgerCloseMeta)
-    if !ok {
-        return nil, fmt.Errorf("unexpected message type: %T", msg)
-    }
-
     // Wrap errors with context
-    results, err := p.processLedger(ledgerMeta)
+    result, err := transform(event)
     if err != nil {
-        return nil, fmt.Errorf("failed to process ledger %d: %w",
-            ledgerMeta.LedgerSeq(), err)
+        return nil, fmt.Errorf("transform failed for event %s: %w", event.Id, err)
     }
 
-    return results, nil
+    return result, nil
 }
 ```
 
 ### Logging
 
 ```go
-import "go.uber.org/zap"
+import "log"
 
-type MyProcessor struct {
-    logger *zap.Logger
-}
-
-func (p *MyProcessor) Process(ctx context.Context, msg interface{}) ([]interface{}, error) {
-    p.logger.Info("processing ledger",
-        zap.Uint32("ledger", ledgerMeta.LedgerSeq()),
-        zap.Int("tx_count", len(transactions)),
-    )
-}
-```
-
-### Metrics
-
-```go
-import "github.com/prometheus/client_golang/prometheus"
-
-var (
-    ledgersProcessed = prometheus.NewCounter(
-        prometheus.CounterOpts{
-            Name: "ledgers_processed_total",
-            Help: "Total number of ledgers processed",
-        },
-    )
-    processingDuration = prometheus.NewHistogram(
-        prometheus.HistogramOpts{
-            Name: "ledger_processing_duration_seconds",
-            Help: "Duration of ledger processing",
-        },
-    )
-)
-
-func (p *MyProcessor) Process(ctx context.Context, msg interface{}) ([]interface{}, error) {
-    start := time.Now()
-    defer func() {
-        processingDuration.Observe(time.Since(start).Seconds())
-        ledgersProcessed.Inc()
-    }()
-
-    // Processing logic...
+func processEvent(ctx context.Context, event *flowpb.Event) ([]*flowpb.Event, error) {
+    log.Printf("Processing event: id=%s type=%s", event.Id, event.Type)
+    // ... processing logic
 }
 ```
 
 ### Configuration Validation
 
 ```go
-func NewMyProcessor(config map[string]interface{}) (*MyProcessor, error) {
-    network, ok := config["network"].(string)
-    if !ok || network == "" {
-        return nil, fmt.Errorf("network is required")
+func main() {
+    apiEndpoint := os.Getenv("API_ENDPOINT")
+    if apiEndpoint == "" {
+        log.Fatal("API_ENDPOINT is required")
     }
 
-    if network != "testnet" && network != "mainnet" {
-        return nil, fmt.Errorf("invalid network: %s", network)
-    }
-
-    return &MyProcessor{network: network}, nil
+    // Validate configuration before creating component
+    src := source.New(source.Config{
+        Name: "api-source",
+        // ...
+    })
 }
 ```
 
----
+## Complete Examples
 
-## Testing Your Component
+The flowctl-sdk repository includes complete working examples:
 
-### Unit Tests
+**Stellar Contract Events Pipeline** (< 5 minutes to run):
+- **Location**: `flowctl-sdk/examples/contract-events-pipeline/`
+- **Components**:
+  - Stellar Live Source (streams ledger data)
+  - Contract Events Processor (extracts contract events)
+  - PostgreSQL Consumer (stores in database)
+- **Demo**: `./demo.sh` runs the complete pipeline
 
-Create `processor_test.go`:
+**Other Examples**:
+- `examples/stellar-live-source/` - Stellar RPC source
+- `examples/contract-events-processor/` - Event extraction
+- `examples/postgresql-consumer/` - Database sink
 
-```go
-package processor
+## Deploying to Obsrvr Flow
 
-import (
-    "context"
-    "testing"
+Components built with flowctl-sdk work seamlessly with Obsrvr Flow:
 
-    "github.com/stretchr/testify/assert"
-    "github.com/stellar/go/xdr"
-)
+1. **Build and push Docker image** to a container registry
+2. **Configure in Flow Console** with your image URL
+3. **Deploy** - Flow handles orchestration automatically
 
-func TestMyProcessor(t *testing.T) {
-    config := map[string]interface{}{
-        "network": "testnet",
-        "batch_size": 100,
-    }
+Your component will integrate with Flow's:
+- Automatic scaling
+- Health monitoring
+- Log streaming
+- Usage tracking
 
-    processor, err := NewMyCustomProcessor(config)
-    assert.NoError(t, err)
+## Additional Resources
 
-    // Create test ledger
-    ledgerMeta := &xdr.LedgerCloseMeta{
-        V: 1,
-        // ... populate test data
-    }
-
-    results, err := processor.Process(context.Background(), ledgerMeta)
-    assert.NoError(t, err)
-    assert.Greater(t, len(results), 0)
-}
-```
-
-### Integration Tests
-
-```go
-func TestProcessorIntegration(t *testing.T) {
-    // Start test gRPC server
-    // Connect processor
-    // Send test ledgers
-    // Verify outputs
-}
-```
-
----
-
-## Publishing Your Component
-
-### To Docker Hub
-
-```bash
-# Tag your image
-docker tag myorg/my-processor:1.0.0 docker.io/myorg/my-processor:1.0.0
-
-# Push to Docker Hub
-docker push docker.io/myorg/my-processor:1.0.0
-```
-
-### To GitHub Container Registry
-
-```bash
-# Tag for GHCR
-docker tag myorg/my-processor:1.0.0 ghcr.io/myorg/my-processor:1.0.0
-
-# Login to GHCR
-echo $GITHUB_TOKEN | docker login ghcr.io -u myusername --password-stdin
-
-# Push
-docker push ghcr.io/myorg/my-processor:1.0.0
-```
-
----
+- **[flowctl Documentation](https://github.com/withobsrvr/flowctl)** - Orchestrator docs
+- **[flowctl-sdk Repository](https://github.com/withObsrvr/flowctl-sdk)** - SDK and examples
+- **[Pipeline Examples](./examples.md)** - Complete pipeline configurations
+- **[Component Registry](./overview.md)** - Browse existing components
 
 ## Next Steps
 
-- **Examples**: See [complete pipeline examples](./examples.md)
-- **Existing Components**: Browse [sources](./sources.md), [processors](./processors.md), [sinks](./sinks.md)
-- **Reference**: Check existing components in [ttp-processor-demo](https://github.com/withObsrvr/ttp-processor-demo) and [cdp-pipeline-workflow](https://github.com/withObsrvr/cdp-pipeline-workflow)
+1. **Clone flowctl-sdk**: `git clone https://github.com/withObsrvr/flowctl-sdk`
+2. **Run the demo**: `cd examples/contract-events-pipeline && ./demo.sh`
+3. **Build your component**: Follow the examples above
+4. **Test locally**: Use `flowctl run` to test your pipeline
+5. **Deploy to Flow**: Push to container registry and deploy via Console
+
+## Getting Help
+
+- **GitHub Issues**: [flowctl-sdk issues](https://github.com/withObsrvr/flowctl-sdk/issues)
+- **Documentation**: [Full SDK docs](https://github.com/withObsrvr/flowctl-sdk)
+- **Support**: support@withobsrvr.com

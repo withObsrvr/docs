@@ -100,12 +100,37 @@ New to Flow? Follow our [Quickstart Guide](./getting-started/quickstart.md) to d
 Flow pipelines follow a simple yet powerful architecture:
 
 ```
-Stellar/Soroban Network → Processor(s) → Consumer(s) → Your Application
+┌─────────────────────────────────────────────────────────────┐
+│                    Flow (Orchestrator)                       │
+│  • Component Registry & Health Monitoring                   │
+│  • Stream Management                                        │
+│  • Managed Infrastructure                                    │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+  │   Source     │───▶│  Processor   │───▶│    Sink      │
+  │              │    │              │    │              │
+  │ (Stellar/    │    │ (Transforms  │    │ (PostgreSQL, │
+  │  Soroban)    │    │  data)       │    │  Webhooks)   │
+  └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
+- **Sources** fetch data from Stellar/Soroban networks or cloud storage
 - **Processors** transform raw blockchain data into structured formats
-- **Consumers** deliver the processed data to your chosen destination
-- **Orchestration** handled automatically by Flow's infrastructure
+- **Sinks** deliver the processed data to your chosen destination
+- **Orchestration** handled automatically by Flow's managed infrastructure
+
+### Powered by flowctl
+
+Flow uses [flowctl](https://github.com/withobsrvr/flowctl) as its underlying orchestration engine. flowctl is an open-source pipeline orchestrator that:
+- Manages component lifecycle and health monitoring
+- Routes data between components via gRPC streams
+- Provides observability through metrics and structured logging
+- Supports multiple deployment targets (process, docker, kubernetes)
+
+**For self-hosted deployments**, you can use flowctl directly. See the [flowctl documentation](https://github.com/withobsrvr/flowctl) for installation and configuration.
 
 ## Available Components
 
