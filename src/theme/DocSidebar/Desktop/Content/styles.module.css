@@ -21,7 +21,7 @@
 .productSwitcher {
   margin-top: auto;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--ifm-toc-border-color);
 }
 
 .productList {
@@ -37,7 +37,7 @@
 .productLink {
   display: block;
   padding: 0.5rem 0.75rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--ifm-menu-color);
   font-size: 0.9rem;
   text-decoration: none;
   transition: all 0.15s ease;
@@ -45,20 +45,20 @@
 }
 
 .productLink:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--ifm-menu-color-active);
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--ifm-menu-color-background-hover);
 }
 
 .productLinkActive {
-  background: rgba(66, 184, 131, 0.15);
-  color: #42b883;
+  background: var(--ifm-menu-color-background-active);
+  color: var(--ifm-menu-color-active);
   font-weight: 500;
-  border-left: 3px solid #42b883;
+  border-left: 3px solid var(--ifm-color-primary);
   padding-left: calc(0.75rem - 3px);
 }
 
 .productLinkActive:hover {
-  background: rgba(66, 184, 131, 0.2);
-  color: #42b883;
+  background: var(--ifm-menu-color-background-active);
+  color: var(--ifm-menu-color-active);
 }

@@ -15,7 +15,7 @@ A Flow pipeline reads Stellar ledger data, applies one or more processors, and w
 
 ```text
 Stellar ledger stream
-  → processor: payments_with_memo
+  → processor: payments_memo
   → consumer: PostgreSQL
 ```
 
@@ -53,6 +53,9 @@ spec:
 Deploy with the Flow Pipeline API:
 
 ```bash
+export CONSOLE="https://console.withobsrvr.com"
+export API_KEY="your-team-api-key"
+
 curl -X POST \
   -H "Authorization: Api-Key $API_KEY" \
   -H "Content-Type: text/yaml" \

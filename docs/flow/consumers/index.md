@@ -8,6 +8,9 @@ title: Consumers Reference
 This page lists the consumer IDs currently exposed by the Flow registry. Use these IDs in `spec.consumers[].type` when creating pipelines through the API.
 
 ```bash
+export CONSOLE="https://console.withobsrvr.com"
+export API_KEY="your-team-api-key"
+
 curl -H "Authorization: Api-Key $API_KEY" \
   "$CONSOLE/api/v1/flow/registry/consumers/"
 ```
@@ -57,7 +60,7 @@ consumers:
       host: postgres.example.com
       port: 5432
       database: defaultdb
-      username: avnadmin
+      username: postgres
       password: "${POSTGRES_PASSWORD}"
       sslmode: require
       max_open_conns: 10
@@ -89,7 +92,7 @@ consumers:
       host: postgres.example.com
       port: 5432
       database: defaultdb
-      username: avnadmin
+      username: postgres
       password: "${POSTGRES_PASSWORD}"
       sslmode: require
       max_open_conns: 10
@@ -121,7 +124,7 @@ consumers:
       host: postgres.example.com
       port: 5432
       database: defaultdb
-      username: avnadmin
+      username: postgres
       password: "${POSTGRES_PASSWORD}"
       sslmode: require
       max_open_conns: 10
@@ -153,7 +156,7 @@ consumers:
       host: postgres.example.com
       port: 5432
       database: defaultdb
-      username: avnadmin
+      username: postgres
       password: "${POSTGRES_PASSWORD}"
       sslmode: require
       max_open_conns: 10
@@ -239,7 +242,7 @@ consumers:
       host: postgres.example.com
       port: 5432
       database: defaultdb
-      username: avnadmin
+      username: postgres
       password: "${POSTGRES_PASSWORD}"
       sslmode: require
       max_open_conns: 10

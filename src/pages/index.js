@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 
@@ -37,7 +37,7 @@ function Hero({onSearch}) {
     <span className="pill"><span className="dot" /><span>All systems operational · ledger 55,812,406</span></span>
     <h1>Build on Stellar without building <span className="accent">the data layer.</span></h1>
     <p className="lede">Decoded, queryable Stellar data — bronze to gold, with tables for token transfers, contract events, account snapshots, and network metrics.</p>
-    <button className="dl-bigsearch" onClick={onSearch}><span className="sicon"><IL.search w={20} /></span><span className="lab">Search Lake, Flow, Gateway</span><span className="ai-chip"><IL.ai w={12} />Ask AI</span><span className="kbd">⌘K</span></button>
+    <button className="dl-bigsearch" onClick={onSearch}><span className="sicon"><IL.search w={20} /></span><span className="lab">Search Lake, Flow, Gateway</span><span className="kbd">⌘K</span></button>
     <div className="hints"><b>Try:</b><Link to="/docs/lake/guides/query-examples">Get USDC transfers for an account</Link><Link to="/docs/lake/overview">Compare Lake to raw getEvents</Link><Link to="/docs/gateway/overview">Find Gateway endpoints</Link></div>
   </section>;
 }
@@ -80,7 +80,15 @@ function Quickstart() {
   const [lang, setLang] = useState('curl');
   const [copied, setCopied] = useState(false);
   const active = LANGS[lang];
-  const copy = () => { navigator.clipboard?.writeText(active.code); setCopied(true); setTimeout(() => setCopied(false), 1200); };
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(active.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch (error) {
+      console.error('Failed to copy code sample', error);
+    }
+  };
   return <section className="dl-section">
     <div className="head"><span className="eyebrow">Get started</span><h2>Query decoded Stellar data in under 60 seconds</h2><span className="sub"><Link to="/docs/lake/getting-started/quickstart">Lake quickstart <IL.arrowR w={12} /></Link></span></div>
     <div className="dl-quickstart">
@@ -102,13 +110,13 @@ function Products() {
 }
 
 const roles = [
-  ['a', IL.wallet, 'Wallets', 'Show users a clear, human-readable history of their on-chain activity.', ['Decoded transaction summaries', 'Asset deltas in/out per address', 'Soroban contract calls labeled']],
-  ['b', IL.branch, 'Protocols', 'Read your own contract events and the rest of the network through a single API.', ['Contract event streams', 'Soroban storage snapshots', 'Cross-protocol asset routing']],
-  ['c', IL.shieldCheck, 'Compliance teams', 'Audit-ready exports, sanctions screening, and stablecoin flow analytics.', ['Per-address activity reports', 'Sanctioned counterparty checks', 'CSV / parquet exports']],
+  ['a', IL.wallet, 'Wallets', 'Show users a clear, human-readable history of their on-chain activity.', ['Decoded transaction summaries', 'Asset deltas in/out per address', 'Soroban contract calls labeled'], '/docs/lake/guides/query-examples'],
+  ['b', IL.branch, 'Protocols', 'Read your own contract events and the rest of the network through a single API.', ['Contract event streams', 'Soroban storage snapshots', 'Cross-protocol asset routing'], '/docs/flow/overview'],
+  ['c', IL.shieldCheck, 'Compliance teams', 'Audit-ready exports, sanctions screening, and stablecoin flow analytics.', ['Per-address activity reports', 'Sanctioned counterparty checks', 'CSV / parquet exports'], '/docs/lake/overview'],
 ];
 
 function ByRole() {
-  return <section className="dl-section"><div className="head"><span className="eyebrow">Start by role</span><h2>Pick the path that fits what you're building</h2></div><div className="dl-roles">{roles.map(([cls, Icon, title, desc, bullets]) => <a key={title} className={'dl-role ' + cls} href="#"><div className="glyph"><Icon w={20} /></div><h3>{title}</h3><p>{desc}</p><ul>{bullets.map((b) => <li key={b}><span className="check"><IL.check w={14} /></span>{b}</li>)}</ul><span className="start">{title} guide <IL.arrowR w={13} /></span></a>)}</div></section>;
+  return <section className="dl-section"><div className="head"><span className="eyebrow">Start by role</span><h2>Pick the path that fits what you're building</h2></div><div className="dl-roles">{roles.map(([cls, Icon, title, desc, bullets, href]) => <Link key={title} className={'dl-role ' + cls} to={href}><div className="glyph"><Icon w={20} /></div><h3>{title}</h3><p>{desc}</p><ul>{bullets.map((b) => <li key={b}><span className="check"><IL.check w={14} /></span>{b}</li>)}</ul><span className="start">{title} guide <IL.arrowR w={13} /></span></Link>)}</div></section>;
 }
 
 const guides = [
@@ -125,14 +133,7 @@ function Guides() {
 }
 
 function Help() {
-  return <section className="dl-help"><div><h3>Stuck or need higher limits?</h3><p>Talk to a Stellar engineer at Obsrvr — same person who'd answer in production support.</p></div><div className="actions"><a href="#"><IL.msg w={14} />Chat with us</a><a href="#" className="primary">Contact sales <IL.arrowR w={14} /></a></div></section>;
-}
-
-function CmdK({open, onClose}) {
-  const inputRef = useRef(null);
-  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
-  if (!open) return null;
-  return <div className="cmdk-overlay open" onClick={(e) => { if (e.target.classList.contains('cmdk-overlay')) onClose(); }}><div className="cmdk"><div className="cmdk-input-wrap"><IL.search /><input ref={inputRef} placeholder="Search docs, ask AI, or jump to an endpoint…" /><span className="kbd">Esc</span></div><div className="cmdk-results"><div className="cmdk-section"><h6>Ask AI</h6><div className="cmdk-item active"><span className="ico"><IL.ai /></span><span>How do I subscribe to live transactions?</span><span className="meta">↵</span></div></div><div className="cmdk-section"><h6>Quickstart</h6><div className="cmdk-item"><span className="ico"><IL.rocket /></span><span>Get started in 60 seconds</span></div><div className="cmdk-item"><span className="ico"><IL.key /></span><span>Create your first API key</span></div></div></div><div className="cmdk-foot"><span><span className="kbd">↑</span><span className="kbd">↓</span> Navigate</span><span><span className="kbd">↵</span> Select</span><span style={{marginLeft: 'auto'}}>Powered by Obsrvr AI</span></div></div></div>;
+  return <section className="dl-help"><div><h3>Stuck or need higher limits?</h3><p>Talk to a Stellar engineer at Obsrvr — same person who'd answer in production support.</p></div><div className="actions"><a href="mailto:support@withobsrvr.com"><IL.msg w={14} />Chat with us</a><a href="mailto:sales@withobsrvr.com" className="primary">Contact sales <IL.arrowR w={14} /></a></div></section>;
 }
 
 export default function Home() {

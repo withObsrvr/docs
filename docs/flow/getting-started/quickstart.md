@@ -55,10 +55,10 @@ spec:
     - type: contract_events_postgres
       config:
         host: postgres.example.com
-        port: 23548
+        port: 5432
         connect_timeout: 30
         database: defaultdb
-        username: avnadmin
+        username: postgres
         password: ${POSTGRES_PASSWORD}
         sslmode: require
         schema: public

@@ -30,7 +30,7 @@ consumers:
       host: postgres.example.com
       port: 5432
       database: defaultdb
-      username: avnadmin
+      username: postgres
       password: ${POSTGRES_PASSWORD}
       sslmode: require
       max_open_conns: 10

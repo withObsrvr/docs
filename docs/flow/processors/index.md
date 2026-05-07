@@ -8,6 +8,9 @@ title: Processors Reference
 This page lists the processor IDs currently exposed by the Flow registry. Use these IDs in `spec.processors[].type` when creating pipelines through the API.
 
 ```bash
+export CONSOLE="https://console.withobsrvr.com"
+export API_KEY="your-team-api-key"
+
 curl -H "Authorization: Api-Key $API_KEY" \
   "$CONSOLE/api/v1/flow/registry/processors/"
 ```

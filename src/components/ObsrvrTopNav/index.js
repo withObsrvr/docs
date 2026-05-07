@@ -76,7 +76,7 @@ function SearchModal({open, onClose}) {
     <div className="cmdk">
       <div className="cmdk-input-wrap">
         {icons.search({})}
-        <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" />
+        <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs…" aria-label="Search docs" />
         <span className="kbd">Esc</span>
       </div>
       <div className="cmdk-results">

@@ -11,6 +11,7 @@ Lake exposes Stellar bronze, silver, semantic, and gold data through REST endpoi
 ## Base URL
 
 ```bash
+export API_KEY="your-api-key"
 export BASE="https://gateway.withobsrvr.com/lake/v1/testnet"
 ```
 
@@ -152,4 +153,4 @@ Treat cursors as opaque strings. Do not parse or construct them.
 
 - [Run the Lake quickstart](/docs/lake/getting-started/quickstart)
 - [Copy query examples](/docs/lake/guides/query-examples)
-- [Understand Lake architecture](/docs/lake/overview)
+- [Understand Lake architecture](/docs/lake/architecture/overview)
