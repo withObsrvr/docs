@@ -2,98 +2,92 @@
 sidebar_position: 1
 ---
 
-# Introduction
+# What is Obsrvr?
 
-## **Obsrvr Gateway Overview**
+Obsrvr is the data backbone for Stellar builders. It gives developers, analysts, and compliance teams decoded ledger data, semantic tables, and production APIs without making them run Horizon, parse XDR, index Soroban events, or maintain their own warehouse.
 
-Obsrvr Gateway provides a seamless and secure connection to both the **Stellar** and **Soroban RPC** networks. It allows developers and businesses to interact with both **Mainnet** and **Testnet** environments using dedicated APIs. Whether you are building decentralized applications (dApps) or exploring transaction data, the Obsrvr Gateway ensures easy access to the tools you need.
+Obsrvr is not a generic Web3 data platform. It is built around Stellar's data model: ledgers, operations, trustlines, path payments, Soroban contract events, SAC transfers, and account state.
 
-### **Supported Networks:**
+## Start with Lake
 
-- **Stellar Mainnet:** `https://stellar.nodeswithobsrvr.co/`
-- **Stellar Testnet:** `https://stellar-testnet.nodeswithobsrvr.co/`
-- **Soroban RPC Mainnet:** `https://rpc.nodeswithobsrvr.co/`
-- **Soroban RPC Testnet:** `https://rpc-testnet.nodeswithobsrvr.co/`
+Obsrvr Lake is the centerpiece. It stores Stellar data in a medallion architecture:
 
-These endpoints allow access to their respective networks for interacting with accounts, assets, transactions, and other key data on the Stellar and Soroban networks.
+| Layer | What it contains | Use it for |
+|-------|------------------|------------|
+| Bronze | Raw decoded Stellar ledger data | Audit trails, custom derivations, parity with ledger history |
+| Silver | Normalized analytics tables | Token transfers, account snapshots, contract events, Soroban calls |
+| Gold | Business-ready metrics | Stablecoin volume, fee intelligence, network health, compliance exports |
 
----
-
-## **API Key Authentication**
-
-To access any of the provided APIs, you must authenticate using an API key. These keys can be generated from the **Obsrvr Console**.
-
-### **How to Generate an API Key:**
-
-1. Visit the Obsrvr Console: [console.withobsrvr.com](https://console.withobsrvr.com).
-2. Create a subscription to access Obsrvr services.
-3. After creating your subscription, navigate to the "Teams" section.
-4. Generate a **Team API Key**. 
-5. Your API key will be displayed at the top of the screen in a message bar. Make sure to copy it for future use.
-6. You can revoke the API key at any time by selecting the **Revoke** button next to the key in the Console.
-
-### **Using the API Key in Requests:**
-
-When making requests to the Obsrvr Gateway, include the API key in the HTTP headers for authentication. The format for the header is as follows:
+Most teams should start with Lake. If you want USDC transfers for an account, top Soroban contracts, account balances at a point in time, or a transaction summary, Lake is the shortest path.
 
 ```bash
-Authorization: Api-Key YOUR_API_KEY
+export API_KEY="your-api-key"
+export BASE="https://gateway.withobsrvr.com/lake/v1/testnet"
+
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$BASE/api/v1/silver/transfers?asset_code=USDC&limit=10"
 ```
 
-**Example Request:**
+## Product map
 
-```bash
-curl -H "Authorization: Api-Key 1bBhBBbB.AAaa6MlgbAa5CCCIQaaaaCRClP4567yy" -L https://stellar-testnet.nodeswithobsrvr.co/
+```text
+Console
+  └─ Manage API keys, subscriptions, and resources
+
+Gateway
+  ├─ Horizon access
+  ├─ Stellar RPC access
+  └─ Lake API entrance point
+
+Lake
+  ├─ Bronze: raw decoded ledger data
+  ├─ Silver: analytics-ready Stellar tables
+  └─ Gold: business-ready metrics and compliance outputs
+
+Flow
+  └─ Managed custom pipelines for teams that need their own processors and sinks
 ```
 
-This header ensures that your requests are authorized to access the network resources.
+## When to use each product
 
----
+### Lake
 
-## **Endpoints**
+Use Lake when you need decoded, queryable Stellar data. Lake is the default choice for wallets, explorers, analysts, compliance workflows, and dashboards.
 
-### **Stellar Mainnet:**
+Start here if your question sounds like:
 
-- **Base URL:** `https://stellar.nodeswithobsrvr.co/`
-- **Usage:** Access Stellar’s main network for real-time transactions, accounts, and asset data.
+- What token transfers involved this account?
+- Which Soroban contracts were most active in the last 24 hours?
+- What was this account's balance at a ledger or timestamp?
+- What events did this contract emit?
+- What stablecoin volume moved yesterday?
 
-### **Stellar Testnet:**
+[Open Lake docs](/docs/lake/overview).
 
-- **Base URL:** `https://stellar-testnet.nodeswithobsrvr.co/`
-- **Usage:** Interact with Stellar’s test network to develop and test applications.
+### Flow
 
-### **Soroban RPC Mainnet:**
+Use Flow when you need a custom managed pipeline. Flow runs pipelines made from processors and consumers: read from Stellar, transform records, and write to PostgreSQL, webhooks, Kafka, S3, or another sink.
 
-- **Base URL:** `https://rpc.nodeswithobsrvr.co/`
-- **Usage:** Execute Soroban smart contracts, and query real-time blockchain data on the main network.
+Use Flow when Lake's standard tables are not the shape you need, or when you need to deliver events into your own system continuously.
 
-### **Soroban RPC Testnet:**
+[Open Flow docs](/docs/flow/overview).
 
-- **Base URL:** `https://rpc-testnet.nodeswithobsrvr.co/`
-- **Usage:** Develop, test, and simulate Soroban smart contracts in a test environment.
+### Gateway
 
----
+Use Gateway for direct Horizon and Stellar RPC access. It is SDK-compatible infrastructure for network calls, transaction submission, and RPC methods.
 
-## **Managing API Keys**
+Gateway is useful, but it is not the main reason to choose Obsrvr. Lake is where decoded Stellar data becomes queryable.
 
-API keys are critical for accessing and managing Obsrvr Gateway resources. You can create, view, and revoke keys directly through the Obsrvr Console. 
+[Open Gateway docs](/docs/gateway/overview).
 
-- **Creating API Keys:**
-  - Go to the Obsrvr Console and navigate to the "Teams" section.
-  - Click on "New Team API Key" to generate a key.
-- **Revoking API Keys:**
-  - To revoke an API key, select the **Revoke** button next to the specific key in the Console. Once revoked, the key will no longer be valid for authorization.
+### Console
 
----
+Use Console to manage Obsrvr resources: API keys, subscriptions, Gateway access, Flow pipelines, and account settings.
 
-## **Best Practices**
+[Open Console](https://console.withobsrvr.com).
 
-- **Keep your API key private**: Ensure that your API keys are not shared publicly or in your source code. 
-- **Use a separate key for each environment**: You can generate separate API keys for different teams or environments (production, testing) to maintain better security and manageability.
-- **Rotate your keys regularly**: Regularly rotating API keys ensures enhanced security and minimizes risk in case of accidental exposure.
+## What makes Obsrvr different
 
----
+Stellar's RPC and Horizon give you network access. Hubble-style datasets give you raw tables. `getEvents` gives you contract events, but not a complete semantic model for transfers, balances, contracts, and account activity.
 
-### **Next Steps:**
-
-For more information on how to use the API or integrate with Stellar/Soroban, explore our comprehensive [API documentation](https://docs.withobsrvr.com) or visit the Obsrvr Console at [console.withobsrvr.com](https://console.withobsrvr.com).
+Obsrvr Lake sits above those layers. It keeps the raw record, then adds Stellar-native silver tables and gold metrics so teams can ask questions without rebuilding the indexer first.

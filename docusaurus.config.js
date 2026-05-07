@@ -41,9 +41,8 @@ const config = {
       ({
         docs: {
           sidebarPath: "./sidebars.js",
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
         },
+        blog: false,
         theme: {
           customCss: "./src/css/custom.css",
         },
@@ -54,11 +53,14 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      defaultMode: "dark",
+      colorMode: {
+        defaultMode: "light",
+        respectPrefersColorScheme: true,
+      },
       // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
       navbar: {
-        title: "Docs",
+        title: "obsrvr",
         logo: {
           alt: "Obsrvr Logo",
           src: "img/obsrvr_black.png",
@@ -97,7 +99,7 @@ const config = {
             title: "Docs",
             items: [
               {
-                label: "Tutorial",
+                label: "Getting Started",
                 to: "/docs/intro",
               },
             ],

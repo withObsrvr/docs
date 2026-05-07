@@ -1,761 +1,239 @@
 ---
 sidebar_position: 1
-title: Processors Overview
+title: Processors Reference
 ---
 
-# Processors
+# Flow processors
 
-Processors are the core components that transform raw blockchain data into structured, actionable information. Each processor is designed for specific use cases and data types on the Stellar and Soroban networks.
+This page lists the processor IDs currently exposed by the Flow registry. Use these IDs in `spec.processors[].type` when creating pipelines through the API.
 
-## Available Processors
+```bash
+export CONSOLE="https://console.withobsrvr.com"
+export API_KEY="your-team-api-key"
 
-### Core Ledger & Transaction
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$CONSOLE/api/v1/flow/registry/processors/"
+```
 
-#### Ledger Reader
-Reads ledger close metadata and emits individual transactions.
+## Processor summary
 
-**Configuration:**
+| ID | Name | Description | Compatible consumers |
+|----|------|-------------|----------------------|
+| `payments_memo` | Payments with Memo | Process payment operations with memo fields | None currently exposed by registry compatibility rules |
+| `raw_transactions` | Raw Transactions | Process raw transactions | None currently exposed by registry compatibility rules |
+| `account_balance` | Account Balance | Track account balances | None currently exposed by registry compatibility rules |
+| `latest_ledger` | Latest Ledger Metrics | Process and track metrics for the latest ledger | `save_latest_ledger_redis` |
+| `contract_event` | Contract Event | Process Soroban contract events | `contract_events_postgres` |
+| `soroswap` | SwapService | Process SwapService events | `soroswap_postgres` |
+| `account_data` | Account Data | Process Stellar account data changes | `account_data_postgres` |
+| `contract_invocation` | Contract Invocation | Track Soroban contract invocations and their details | `contract_invocations_postgres`, `extracted_contract_invocations_postgres` |
+| `contract_filter` | Contract Filter | Filter events by specific contract IDs | `contract_events_postgres`, `contract_invocations_postgres`, `extracted_contract_invocations_postgres` |
+| `contract_data` | Contract Data | Process Stellar Soroban contract data changes | `contract_data_postgres` |
+| `extracted_contract_invocation` | Extracted Contract Invocation | Extract structured business data from contract invocations using configurable schemas | `extracted_contract_invocations_postgres` |
+| `event_payment_extractor` | Event Payment Extractor | Extracts structured payment events from contract events (Kwickbit payment processor) | `event_payment_postgres`, `google_pubsub_v2` |
+
+## Processor configuration reference
+
+### `payments_memo` — Payments with Memo
+
+Process payment operations with memo fields
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `min_amount` | string | No |  | Minimum payment amount to process |
+| `memo_text` | string | No | `internal` | Filter payments by memo text |
+| `asset_code` | string | No |  | Filter by specific asset |
+| `addresses` | array | No |  | Filter by specific addresses |
+
+
+**Example**
+
 ```yaml
-type: ledger_reader
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: payments_memo
+    config:
+      min_amount: ""
+      memo_text: "internal"
+      asset_code: ""
 ```
 
-**Use Case:** Entry point for transaction-level processing pipelines
+### `raw_transactions` — Raw Transactions
 
----
+Process raw transactions
 
-#### Passthrough Processor
-Passes ledger data through with minimal transformation, maintains XDR structure.
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `transaction_types` | array | No |  | Types of transactions to process |
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: passthrough
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-  add_metadata: false
-  include_full_xdr: true
-  include_xdr_json: false
+processors:
+  - type: raw_transactions
 ```
 
-**Use Case:** Preserve raw ledger data while adding lightweight metadata
+### `account_balance` — Account Balance
 
----
+Track account balances
 
-#### Ledger to JSON
-Converts LedgerCloseMeta to JSON format.
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `account_ids` | array | Yes |  | List of account IDs to monitor |
+| `assets` | array | No |  | Filter by specific assets |
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: ledger_to_json
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: account_balance
+    config:
+      account_ids: []
 ```
 
-**Use Case:** Export ledger data as JSON for downstream systems
+### `latest_ledger` — Latest Ledger Metrics
 
----
+Process and track metrics for the latest ledger
 
-#### Ledger Changes
-Extracts and processes ledger entry changes (creates, updates, deletes).
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `network_passphrase` | string | Yes |  | The network passphrase for the Stellar network |
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: ledger_changes
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: latest_ledger
+    config:
+      network_passphrase: "Test SDF Network ; September 2015"
 ```
 
-**Use Case:** Track state changes in the ledger
+### `contract_event` — Contract Event
 
----
+Process Soroban contract events
 
-#### Latest Ledger
-Tracks and emits latest ledger information with transaction metrics.
+No processor-specific configuration fields.
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: latest_ledger
+processors:
+  - type: contract_event
 ```
 
-**Use Case:** Monitor ledger progression and transaction activity
+### `soroswap` — SwapService
 
----
+Process SwapService events
 
-#### Latest Ledger RPC
-Transforms raw getLatestLedger RPC data into structured messages.
+No processor-specific configuration fields.
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: latest_ledger_rpc
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: soroswap
 ```
 
-**Use Case:** Process RPC responses for latest ledger queries
+### `account_data` — Account Data
 
----
+Process Stellar account data changes
 
-#### Operation Processor
-Extracts all operation types from transactions.
+No processor-specific configuration fields.
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: operation
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: account_data
 ```
 
-**Use Case:** Track all operations regardless of type
+### `contract_invocation` — Contract Invocation
 
----
+Track Soroban contract invocations and their details
 
-### Account Monitoring
+No processor-specific configuration fields.
 
-#### Account Data
-Process Stellar account data changes including creation/updates/deletion.
 
-**Configuration:**
+**Example**
+
 ```yaml
-type: account_data
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: contract_invocation
 ```
 
-**Use Case:** Track account state changes, balance updates
+### `contract_filter` — Contract Filter
 
----
+Filter events by specific contract IDs
 
-#### Account Data Filter
-Filters account records by various criteria.
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `contract_ids` | array | Yes |  | List of contract IDs to filter events for |
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: account_data_filter
-config:
-  account_ids:
-    - "GABC..."
-    - "GDEF..."
-  min_balance: "100000000"
-  change_types:
-    - "created"
-    - "updated"
-  start_date: "2024-01-01T00:00:00Z"
-  end_date: "2024-12-31T23:59:59Z"
+processors:
+  - type: contract_filter
+    config:
+      contract_ids: ["CC..."]
 ```
 
-**Use Case:** Filter account changes for specific accounts or thresholds
+### `contract_data` — Contract Data
 
----
+Process Stellar Soroban contract data changes
 
-#### Account Effects
-Extracts effects (side-effects of operations) for accounts.
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `network_passphrase` | string | Yes |  | Stellar network identifier |
+| `name` | string | No | `contract_data_processor` | Optional processor identifier |
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: account_effects
-config:
-  account: "GABC123..."
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: contract_data
+    config:
+      network_passphrase: "Test SDF Network ; September 2015"
+      name: "contract_data_processor"
 ```
 
-**Use Case:** Track all effects on specific accounts (credits, debits, trustlines)
+### `extracted_contract_invocation` — Extracted Contract Invocation
 
----
+Extract structured business data from contract invocations using configurable schemas
 
-#### Account Transactions
-Extracts transactions involving specific accounts (Stellar & Soroban).
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `extraction_schemas` | object | Yes | `{}` | Schema definitions for extracting business data from contract invocations |
+| `name` | string | No | `contract_invocation_extractor` | Optional processor identifier |
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: account_transactions
-config:
-  account: "GABC123..."
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: extracted_contract_invocation
+    config:
+      extraction_schemas: {}
+      name: "contract_invocation_extractor"
 ```
 
-**Use Case:** Transaction history for accounts
+### `event_payment_extractor` — Event Payment Extractor
 
----
+Extracts structured payment events from contract events (Kwickbit payment processor)
 
-#### Account Year Analytics
-Generates yearly analytics for a specific account.
+No processor-specific configuration fields.
 
-**Configuration:**
+
+**Example**
+
 ```yaml
-type: account_year_analytics
-config:
-  account_id: "GABC123..."
-  year: 2024
-  network_passphrase: "Public Global Stellar Network ; September 2015"
+processors:
+  - type: event_payment_extractor
 ```
-
-**Use Case:** Annual account activity reports
-
----
-
-#### Create Account
-Extracts create account operations.
-
-**Configuration:**
-```yaml
-type: create_account
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Track new account creation events
-
----
-
-### Soroban Contract Processing
-
-#### [Contract Events](./contract-events.md)
-Captures and processes events emitted by Soroban smart contracts.
-
-**Configuration:**
-```yaml
-type: contract_events
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** DeFi protocol monitoring, dApp event tracking
-
----
-
-#### Contract Invocation
-Extracts contract invocations with full execution details (arguments, results, state changes).
-
-**Configuration:**
-```yaml
-type: contract_invocation
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Comprehensive contract execution tracking
-
----
-
-#### Contract Filter
-Filters events by specific contract IDs.
-
-**Configuration:**
-```yaml
-type: contract_filter
-config:
-  contract_ids:
-    - "CCABC123..."
-    - "CCDEF456..."
-```
-
-**Use Case:** Targeted monitoring of specific contracts
-
----
-
-#### Contract Data
-Processes contract data changes on the Soroban network.
-
-**Configuration:**
-```yaml
-type: contract_data
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** State change monitoring, contract storage analytics
-
----
-
-#### Contract Creation
-Tracks contract creation events.
-
-**Configuration:**
-```yaml
-type: contract_creation
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Monitor new contract deployments
-
----
-
-#### Filtered Contract Invocation
-Filters contract invocations by criteria.
-
-**Configuration:**
-```yaml
-type: filtered_contract_invocation
-config:
-  contract_id: "CCABC123..."
-  function_name: "transfer"
-```
-
-**Use Case:** Filter invocations by contract ID or function name
-
----
-
-#### Stellar Contract Events
-Processes Stellar Asset Contract (SAC) events.
-
-**Configuration:**
-```yaml
-type: stellar_contract_events
-```
-
-**Use Case:** Track Stellar Asset Contract interactions
-
----
-
-#### Get Events RPC
-Fetches events via RPC getEvents endpoint.
-
-**Configuration:**
-```yaml
-type: get_events_rpc
-config:
-  rpc_url: "https://rpc.nodeswithobsrvr.co/"
-```
-
-**Use Case:** Query historical contract events via RPC
-
----
-
-#### Filter Events
-Filters contract events by various criteria.
-
-**Configuration:**
-```yaml
-type: filter_events
-config:
-  event_type: "contract"
-  contract_ids:
-    - "CCABC123..."
-```
-
-**Use Case:** Filter events by type, topic, or contract
-
----
-
-### Bronze Layer (Hubble-Compatible)
-
-#### Bronze Extractors
-Extracts ALL 19 Bronze table data types from LedgerCloseMeta (Hubble-compatible schema).
-
-**Configuration:**
-```yaml
-type: bronze_extractors
-config:
-  network_passphrase: "Test SDF Network ; September 2015"
-```
-
-**Output:** ledgers_row_v2, transactions_row_v2, operations_row_v2, effects_row_v1, trades_row_v1, accounts_snapshot_v1, trustlines_snapshot_v1, contract_events_stream_v1, and 11 more
-
-**Use Case:** Export all data for medallion architecture
-
----
-
-#### Bronze to Contract Invocation
-Converts Bronze SQL query results to ContractInvocation format.
-
-**Configuration:**
-```yaml
-type: bronze_to_contract_invocation
-```
-
-**Use Case:** Bridge Bronze data queries with contract invocation extractors
-
----
-
-### Payment & Operation Processing
-
-#### Filter Payments
-Filters payment operations by amount and asset.
-
-**Configuration:**
-```yaml
-type: filter_payments
-config:
-  min_amount: "100"
-  asset_code: "USDC"
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Track large payments or specific asset transfers
-
----
-
-#### Participant Extractor
-Identifies all accounts involved in a transaction.
-
-**Configuration:**
-```yaml
-type: participant_extractor
-```
-
-**Use Case:** Extract transaction participants for network analysis
-
----
-
-#### Event Payment Extractor
-Extracts structured EventPayment data from contract events.
-
-**Configuration:**
-```yaml
-type: event_payment_extractor
-```
-
-**Use Case:** Parse payment events from payment processor contracts
-
----
-
-#### Transaction XDR Extractor
-Extracts transaction XDR data.
-
-**Configuration:**
-```yaml
-type: transaction_xdr_extractor
-```
-
-**Use Case:** Export transaction XDR for debugging or archival
-
----
-
-### Asset & Market Data
-
-#### Asset Processor
-Processes asset events from operations.
-
-**Configuration:**
-```yaml
-type: asset
-```
-
-**Use Case:** Track asset usage in payments and trades
-
----
-
-#### Asset Enrichment
-Enriches asset data with issuer account information.
-
-**Configuration:**
-```yaml
-type: asset_enrichment
-config:
-  connection_string: "postgresql://user:pass@host:5432/database"
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Add issuer metadata (home domain, auth flags) to asset data
-
----
-
-#### Transform to Asset Stats
-Generates asset statistics.
-
-**Configuration:**
-```yaml
-type: transform_to_asset_stats
-```
-
-**Use Case:** Asset analytics and metrics (holder counts, volume)
-
----
-
-#### Transform to Token Price
-Calculates token prices.
-
-**Configuration:**
-```yaml
-type: transform_to_token_price
-```
-
-**Use Case:** Price tracking for assets
-
----
-
-#### Transform to Market Cap
-Calculates market cap and supply data.
-
-**Configuration:**
-```yaml
-type: transform_to_market_cap
-```
-
-**Use Case:** Market cap tracking for assets
-
----
-
-#### Transform to Market Analytics
-Generates market analytics.
-
-**Configuration:**
-```yaml
-type: transform_to_market_analytics
-```
-
-**Use Case:** Comprehensive market analysis
-
----
-
-#### Market Metrics
-Generates sliding window market metrics.
-
-**Configuration:**
-```yaml
-type: market_metrics
-```
-
-**Use Case:** Trading pair analytics with time-series data
-
----
-
-#### Transform to Ticker Asset
-Transforms operations into ticker asset data.
-
-**Configuration:**
-```yaml
-type: transform_to_ticker_asset
-```
-
-**Use Case:** Asset ticker data for exchanges
-
----
-
-#### Transform to Ticker Orderbook
-Generates orderbook ticker data.
-
-**Configuration:**
-```yaml
-type: transform_to_ticker_orderbook
-```
-
-**Use Case:** Orderbook snapshots for trading pairs
-
----
-
-### DeFi Protocol Processors
-
-#### Soroswap
-Processes Soroswap DEX events (new pairs, syncs).
-
-**Configuration:**
-```yaml
-type: soroswap
-```
-
-**Use Case:** Track Soroswap liquidity pool creation and state changes
-
----
-
-#### Soroswap Router
-Processes Soroswap router events.
-
-**Configuration:**
-```yaml
-type: soroswap_router
-```
-
-**Use Case:** Track Soroswap swap routing
-
----
-
-#### Phoenix AMM
-Processes Phoenix AMM contract events.
-
-**Configuration:**
-```yaml
-type: phoenix_amm
-```
-
-**Use Case:** Track Phoenix AMM swaps and liquidity events
-
----
-
-#### Kale
-Processes Kale contract events and invocations.
-
-**Configuration:**
-```yaml
-type: kale
-```
-
-**Use Case:** Track Kale protocol metrics
-
----
-
-### Application Transforms
-
-#### Transform to App Account
-Transforms account data for application use.
-
-**Configuration:**
-```yaml
-type: transform_to_app_account
-```
-
-**Use Case:** Application-specific account data formatting
-
----
-
-#### Transform to App Metrics
-Generates application network metrics.
-
-**Configuration:**
-```yaml
-type: transform_to_app_metrics
-```
-
-**Use Case:** Network-wide metrics for applications
-
----
-
-#### Transform to App Payment
-Transforms payments for application use.
-
-**Configuration:**
-```yaml
-type: transform_to_app_payment
-```
-
-**Use Case:** Application-friendly payment formatting
-
----
-
-#### Transform to App Trade
-Transforms trades for application use.
-
-**Configuration:**
-```yaml
-type: transform_to_app_trade
-```
-
-**Use Case:** Application-friendly trade formatting
-
----
-
-#### Transform to App Trustline
-Transforms trustlines for application use.
-
-**Configuration:**
-```yaml
-type: transform_to_app_trustline
-```
-
-**Use Case:** Application-friendly trustline formatting
-
----
-
-### State & Effects
-
-#### Stellar Effects
-Processes Stellar effects.
-
-**Configuration:**
-```yaml
-type: stellar_effects
-```
-
-**Use Case:** Extract Horizon-style effects from ledgers
-
----
-
-#### Claimable Balance
-Processes claimable balance entries.
-
-**Configuration:**
-```yaml
-type: claimable_balance
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Track claimable balance creation/updates/claims
-
----
-
-### Wallet Backend
-
-#### Wallet Backend
-Processes state changes for wallet backend.
-
-**Configuration:**
-```yaml
-type: wallet_backend
-```
-
-**Use Case:** Track all state changes relevant to wallet applications
-
----
-
-### Utilities
-
-#### Blank Processor
-Example/template processor for payments.
-
-**Configuration:**
-```yaml
-type: blank
-config:
-  network_passphrase: "Public Global Stellar Network ; September 2015"
-```
-
-**Use Case:** Template for building custom processors
-
----
-
-#### Stdout Sink
-Writes payload to stdout (terminal sink).
-
-**Configuration:**
-```yaml
-type: stdout_sink
-```
-
-**Use Case:** Debug output, pipe to other tools
-
----
-
-## Choosing the Right Processor
-
-Consider these factors when selecting a processor:
-
-1. **Data Requirements**: What specific blockchain data do you need?
-2. **Performance**: Some processors are more resource-intensive than others
-3. **Filtering Needs**: Many processors offer built-in filtering options
-4. **Output Format**: Each processor outputs data in a specific structure
-
-## Processor Configuration
-
-All processors support configuration through the Flow pipeline builder. Common configuration patterns include:
-
-```json
-{
-  "processor_type": "payments_memo",
-  "config": {
-    "memo_text": "invoice-2024",
-    "min_amount": "100",
-    "asset_code": "USDC"
-  }
-}
-```
-
-## Combining Processors
-
-You can chain multiple processors in a single pipeline for complex data processing scenarios. For example:
-- Use Contract Filter → Contract Events for targeted event monitoring
-- Combine Account Balance → Latest Ledger for balance snapshots
-
-## Performance Considerations
-
-- **Filtered processors** (like Payments with Memo) are more efficient than processing all data
-- **Account-specific processors** scale better than network-wide processors
-- **Contract processors** require Soroban-enabled networks
-
-## Next Steps
-
-- Explore individual processor documentation for detailed configuration options
-- Learn about [consumers](../consumers/) to deliver your processed data
-- Check our [Getting Started Guide](../getting-started/quickstart.md) for hands-on examples

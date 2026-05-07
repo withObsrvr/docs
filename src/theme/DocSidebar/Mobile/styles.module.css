@@ -1,0 +1,45 @@
+/* Product Switcher Styles for Mobile */
+.productSwitcher {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ifm-toc-border-color);
+}
+
+.productList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.productList li {
+  margin: 0;
+}
+
+.productLink {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: var(--ifm-menu-color);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+}
+
+.productLink:hover {
+  color: var(--ifm-menu-color-active);
+  text-decoration: none;
+  background: var(--ifm-menu-color-background-hover);
+}
+
+.productLinkActive {
+  background: var(--ifm-menu-color-background-active);
+  color: var(--ifm-menu-color-active);
+  font-weight: 500;
+  border-left: 3px solid var(--ifm-color-primary);
+  padding-left: calc(0.75rem - 3px);
+}
+
+.productLinkActive:hover {
+  background: var(--ifm-menu-color-background-active);
+  color: var(--ifm-menu-color-active);
+}
