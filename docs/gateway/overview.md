@@ -3,90 +3,90 @@ sidebar_position: 1
 title: Gateway Overview
 ---
 
-# Obsrvr Gateway Services
+# Obsrvr Gateway
 
-Obsrvr Gateway provides enterprise-grade access to Stellar and Soroban networks through managed API endpoints. Whether you need Horizon API access for Stellar or JSON-RPC for Soroban smart contracts, our gateway services offer reliability, scalability, and simplicity.
+Gateway provides authenticated access to Stellar Horizon, Stellar RPC, and Lake APIs through a single Gateway URL. Use it when your application needs SDK-compatible network access or one entrance point for Obsrvr services.
 
-## What is Obsrvr Gateway?
+Gateway is infrastructure. If you need decoded transfers, contract analytics, or account snapshots, start with [Obsrvr Lake](/docs/lake/overview).
 
-Obsrvr Gateway is a fully managed service that provides:
+## Base URL
 
-- **Stellar Horizon API** endpoints for mainnet and testnet
-- **Soroban RPC** endpoints for smart contract interactions
-- **High availability** with global infrastructure
-- **No rate limits** for authenticated users
-- **Full historical data** access
+Use `https://gateway.withobsrvr.com` for Gateway services.
 
-## Available Endpoints
+| Service | Mainnet | Testnet |
+|---------|---------|---------|
+| Horizon | `https://gateway.withobsrvr.com/horizon/mainnet/` | `https://gateway.withobsrvr.com/horizon/testnet/` |
+| Stellar RPC | `https://gateway.withobsrvr.com/rpc/mainnet/` | `https://gateway.withobsrvr.com/rpc/testnet/` |
+| Lake API | `https://gateway.withobsrvr.com/lake/v1/mainnet` | `https://gateway.withobsrvr.com/lake/v1/testnet` |
 
-### Stellar Horizon API
+Gateway routes by network in the URL path:
 
-Access the complete Stellar network through our Horizon endpoints:
+- Horizon: `/horizon/{network}/...`
+- Stellar RPC: `/rpc/{network}/`
+- Lake: `/lake/v1/{network}/...`
 
-#### Mainnet
-```
-https://stellar.nodeswithobsrvr.co/
-```
+Supported networks depend on your Gateway plan and configuration. Common values are `mainnet` and `testnet`.
 
-#### Testnet
-```
-https://stellar-testnet.nodeswithobsrvr.co/
-```
+## Authentication
 
-### Soroban RPC
+Send your Obsrvr API key in the `Authorization` header.
 
-Interact with Soroban smart contracts through our RPC endpoints:
-
-#### Mainnet
-```
-https://rpc.nodeswithobsrvr.co/
-```
-
-#### Testnet
-```
-https://rpc-testnet.nodeswithobsrvr.co/
-```
-
-## Key Features
-
-### 🚀 Instant Access
-- No infrastructure setup required
-- Start making API calls immediately
-- Full historical data available
-
-### 🔒 Enterprise Security
-- TLS encryption for all connections
-- API key authentication
-- IP allowlisting available
-
-### 📊 Reliability
-- 99.9% uptime SLA
-- Global load balancing
-- Automatic failover
-
-### 🔧 Developer Friendly
-- Compatible with all Stellar SDKs
-- Comprehensive API documentation
-- WebSocket support for streaming
-
-## Getting Started
-
-### 1. Sign Up
-
-Create an account at [console.withobsrvr.com](https://console.withobsrvr.com) to get your API key.
-
-### 2. Make Your First Request
-
-#### Horizon API Example
 ```bash
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-  https://stellar.nodeswithobsrvr.co/accounts/GABC...XYZ
+Authorization: Api-Key $API_KEY
 ```
 
-#### Soroban RPC Example
+Create and rotate keys in [Console](https://console.withobsrvr.com). Keep API keys server-side and do not embed them in browser code or public repositories.
+
+## Horizon through Gateway
+
+Horizon requests use normal Horizon paths after `/horizon/{network}`.
+
 ```bash
-curl -X POST https://rpc.nodeswithobsrvr.co/ \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+export API_KEY="your-api-key"
+export HORIZON="https://gateway.withobsrvr.com/horizon/testnet"
+
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$HORIZON/ledgers?limit=1&order=desc"
+```
+
+Account example:
+
+```bash
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$HORIZON/accounts/GAIH3ULLFQ4DGSECF2AR555KZ4KNDGEKN4AFI4SU2M7B43MGK3QJZNSR"
+```
+
+Gateway is compatible with Stellar SDKs that accept a Horizon URL and custom headers.
+
+```javascript
+import { Horizon } from '@stellar/stellar-sdk';
+
+const server = new Horizon.Server('https://gateway.withobsrvr.com/horizon/testnet', {
+  headers: {
+    Authorization: `Api-Key ${process.env.OBSRVR_API_KEY}`,
+  },
+});
+
+const ledgers = await server.ledgers().order('desc').limit(1).call();
+console.log(ledgers.records[0]);
+```
+
+For mainnet, use:
+
+```text
+https://gateway.withobsrvr.com/horizon/mainnet
+```
+
+## Stellar RPC through Gateway
+
+Stellar RPC requests are JSON-RPC `POST` requests to `/rpc/{network}/`.
+
+```bash
+export API_KEY="your-api-key"
+export RPC="https://gateway.withobsrvr.com/rpc/testnet/"
+
+curl -X POST "$RPC" \
+  -H "Authorization: Api-Key $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -95,116 +95,93 @@ curl -X POST https://rpc.nodeswithobsrvr.co/ \
   }'
 ```
 
-### 3. Integrate with SDKs
+JavaScript `fetch` example:
 
-#### JavaScript/TypeScript
 ```javascript
-const StellarSdk = require('stellar-sdk');
-
-const server = new StellarSdk.Server('https://stellar.nodeswithobsrvr.co/', {
+const response = await fetch('https://gateway.withobsrvr.com/rpc/testnet/', {
+  method: 'POST',
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  }
+    Authorization: `Api-Key ${process.env.OBSRVR_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'getHealth',
+  }),
 });
+
+console.log(await response.json());
 ```
 
-#### Python
-```python
-from stellar_sdk import Server
-
-server = Server(
-    horizon_url="https://stellar.nodeswithobsrvr.co/",
-    headers={"Authorization": "Bearer YOUR_API_KEY"}
-)
-```
-
-## Use Cases
-
-### DeFi Applications
-- Real-time price feeds
-- Liquidity pool monitoring
-- Transaction history tracking
-
-### Wallets
-- Balance queries
-- Transaction submission
-- Payment streaming
-
-### Analytics Platforms
-- Network statistics
-- Asset distribution analysis
-- Historical data queries
-
-### NFT Marketplaces
-- Asset issuance
-- Ownership tracking
-- Metadata management
-
-## Advanced Features
-
-### Streaming
-Real-time updates via Server-Sent Events:
+Stellar SDK RPC example:
 
 ```javascript
-server.transactions()
-  .cursor('now')
-  .stream({
-    onmessage: (transaction) => {
-      console.log('New transaction:', transaction);
-    }
-  });
+import { rpc } from '@stellar/stellar-sdk';
+
+const server = new rpc.Server('https://gateway.withobsrvr.com/rpc/testnet/', {
+  headers: {
+    Authorization: `Api-Key ${process.env.OBSRVR_API_KEY}`,
+  },
+});
+
+const health = await server.getHealth();
+console.log(health);
 ```
 
-### Pagination
-Efficiently navigate large datasets:
+For mainnet, use:
 
-```javascript
-const payments = await server.payments()
-  .forAccount(accountId)
-  .limit(50)
-  .order('desc')
-  .call();
+```text
+https://gateway.withobsrvr.com/rpc/mainnet/
 ```
 
-### Filtering
-Query specific data subsets:
+Use Stellar RPC for contract simulation, transaction submission, ledger metadata, and RPC methods used by Stellar SDKs.
 
-```javascript
-const trades = await server.trades()
-  .forAssetPair(assetA, assetB)
-  .limit(100)
-  .call();
+## Lake through Gateway
+
+Lake is exposed through Gateway under `/lake/v1/{network}`.
+
+```bash
+export API_KEY="your-api-key"
+export BASE="https://gateway.withobsrvr.com/lake/v1/testnet"
+
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$BASE/api/v1/silver/contracts/top?period=24h&limit=10"
 ```
 
-## Comparison with Self-Hosted
+## Migrating from old direct endpoints
 
-| Feature | Obsrvr Gateway | Self-Hosted |
-|---------|---------------|-------------|
-| Setup Time | Instant | Days/Weeks |
-| Maintenance | None | Continuous |
-| Cost | Pay-per-use | Infrastructure + Staff |
-| Scalability | Automatic | Manual |
-| Historical Data | Full | Limited by storage |
-| High Availability | Built-in | Complex setup |
+If your app still uses the older service-specific hostnames, update them to the Gateway URL path format.
 
-## Pricing
+| Old style | New Gateway style |
+|-----------|-------------------|
+| `https://stellar.nodeswithobsrvr.co/...` | `https://gateway.withobsrvr.com/horizon/mainnet/...` |
+| `https://stellar-testnet.nodeswithobsrvr.co/...` | `https://gateway.withobsrvr.com/horizon/testnet/...` |
+| `https://rpc.nodeswithobsrvr.co/` | `https://gateway.withobsrvr.com/rpc/mainnet/` |
+| `https://rpc-testnet.nodeswithobsrvr.co/` | `https://gateway.withobsrvr.com/rpc/testnet/` |
 
-Gateway services are included with your Obsrvr subscription. See our [pricing page](https://withobsrvr.com/pricing) for details.
+The request shape stays the same for Horizon paths and RPC JSON bodies. Only the base URL changes.
 
-## Guides
+## When to use Gateway vs Lake
 
-Learn how to leverage gateway services for specific use cases:
+| Need | Use |
+|------|-----|
+| Submit a transaction | Gateway RPC or Horizon |
+| Call a Stellar SDK method | Gateway RPC or Horizon |
+| Query account balances as a wallet would | Gateway Horizon |
+| Query normalized token transfers | Lake |
+| Find active Soroban contracts | Lake |
+| Build compliance reports | Lake gold endpoints |
 
-- [Running Stellar RPC with Full History](./guides/stellar-rpc-full-history.md) - Deploy your own RPC with cloud storage
+## Operational notes
 
-## Support
+- Use testnet endpoints for examples and development.
+- Keep API keys server-side. Do not embed keys in browser code or public repos.
+- Generate separate keys for production and development.
+- If you need plan-specific limits or uptime terms, check your Console subscription or contact Obsrvr support.
 
-- **Documentation**: Full API reference at [developers.stellar.org](https://developers.stellar.org)
-- **Discord**: Join our community for real-time help
-- **Email**: support@withobsrvr.com
+## Next steps
 
-## Next Steps
-
-- [Create an account](https://console.withobsrvr.com) to get started
-- Explore our [Flow pipelines](/docs/flow/overview) for data processing
-- Check our [status page](https://status.withobsrvr.com) for real-time monitoring
+- [Query decoded Stellar data with Lake](/docs/lake/overview)
+- [Run the Lake quickstart](/docs/lake/getting-started/quickstart)
+- [Create custom pipelines with Flow](/docs/flow/overview)

@@ -3,187 +3,200 @@ sidebar_position: 2
 title: Quickstart Guide
 ---
 
-# Quickstart Guide
+# Flow quickstart
 
-Get your first Flow pipeline running in minutes. This guide walks you through creating a payment tracking pipeline that monitors Stellar payments and stores them in PostgreSQL.
+Create a Flow pipeline from YAML and deploy it with the API. This example reads Stellar testnet ledger files, extracts Soroban contract events, and writes them to PostgreSQL.
+
+If you only need to query decoded Stellar data, start with [Obsrvr Lake](/docs/lake/overview). Use Flow when you need a custom processor and destination.
+
+:::warning Do not commit credentials
+Pipeline files often contain database credentials. Store them in your deployment secret manager or inject them at deploy time. The examples below use placeholders.
+:::
 
 ## Prerequisites
 
-Before you begin, ensure you have:
+- An Obsrvr account in [Console](https://console.withobsrvr.com)
+- A Team API key
+- An active Flow subscription, unless your team has unbilled pipeline access
+- A PostgreSQL database reachable from the Flow runtime
+- `curl`
 
-1. **Obsrvr Account**: [Sign up](https://console.withobsrvr.com) and join the Flow waitlist
-2. **Active Subscription**: Flow requires an active subscription ($0.003/minute)
-3. **PostgreSQL Database**: For storing the processed data (or use our managed option)
+Set your environment:
 
-## Step 1: Access Flow
-
-Once approved from the waitlist:
-
-1. Log into the [Obsrvr Console](https://console.withobsrvr.com)
-2. Navigate to **Flow** in the main menu
-3. Click **Create Pipeline** to start the configuration wizard
-
-## Step 2: Configure Your Pipeline
-
-### Network Selection
-
-Choose your target network:
-- **Mainnet**: For production data
-- **Testnet**: For development and testing
-
-### Start Ledger Configuration
-
-Select where to begin processing:
-- **Latest**: Start from the most recent ledger
-- **Genesis**: Process from the beginning (historical data)
-- **Specific Ledger**: Enter a ledger number to start from
-
-### Select a Processor
-
-For this example, choose **Payments with Memo**:
-
-```json
-{
-  "type": "payments_memo",
-  "config": {
-    "memo_text": "invoice",
-    "min_amount": "10",
-    "asset_code": "USDC"
-  }
-}
+```bash
+export CONSOLE="https://console.withobsrvr.com"
+export API_KEY="your-team-api-key"
 ```
 
-This configuration will:
-- Filter payments containing "invoice" in the memo
-- Only process payments >= 10 USDC
-- Track USDC payments specifically
+All Flow API requests use:
 
-### Configure the Consumer
-
-Select **PostgreSQL** as your destination:
-
-```json
-{
-  "type": "postgres",
-  "config": {
-    "connection_string": "postgresql://user:password@host:5432/payments",
-    "batch_size": 50
-  }
-}
+```bash
+Authorization: Api-Key $API_KEY
 ```
 
-## Step 3: Deploy Your Pipeline
+## 1. Create a pipeline file
 
-1. Review your configuration
-2. Name your pipeline (e.g., "invoice-payment-tracker")
-3. Click **Deploy Pipeline**
-
-The deployment process:
-- Validates your configuration
-- Securely stores credentials in Vault
-- Deploys to Obsrvr's infrastructure
-- Begins processing immediately
-
-## Step 4: Monitor Your Pipeline
-
-### Pipeline Status
-
-Your pipeline will progress through these states:
-- `pending` → `deploying` → `running`
-
-### View Logs
-
-Click on your pipeline to access:
-- Real-time log streaming
-- Processing statistics
-- Error messages (if any)
-
-### Usage Tracking
-
-Monitor your costs in real-time:
-- Runtime minutes used
-- Current billing rate ($0.003/minute)
-- Estimated monthly cost
-
-## Example: Complete Pipeline Configuration
-
-Here's a complete example for tracking exchange deposits:
+Create `contract-events-to-postgres.yaml`:
 
 ```yaml
-name: "exchange-deposit-tracker"
-network: "mainnet"
-start_ledger: "latest"
-
-processor:
-  type: "payments_memo"
-  config:
-    addresses: 
-      - "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"  # Exchange hot wallet
-    min_amount: "100"
-
-consumer:
-  type: "postgres"
-  config:
-    connection_string: "postgresql://exchange:secure@db.example.com/deposits"
-    batch_size: 10
+apiVersion: flow.obsrvr.com/v1
+kind: Pipeline
+metadata:
+  name: ContractEventsToPostgres
+spec:
+  network: testnet
+  startLedger: "2434280"
+  endLedger: "2434281"
+  processors:
+    - type: contract_event
+      config:
+        network_passphrase: Test SDF Network ; September 2015
+  consumers:
+    - type: contract_events_postgres
+      config:
+        host: postgres.example.com
+        port: 23548
+        connect_timeout: 30
+        database: defaultdb
+        username: avnadmin
+        password: ${POSTGRES_PASSWORD}
+        sslmode: require
+        schema: public
+        table_prefix: stellar_
 ```
 
-## Querying Your Data
+This pipeline processes ledgers `2434280` through `2434281` on testnet and writes contract events to PostgreSQL tables with the `stellar_` prefix.
 
-Once data starts flowing, query it from PostgreSQL:
+## 2. Validate the config
 
-```sql
--- Find recent large payments
-SELECT 
-    transaction_hash,
-    source_account,
-    amount,
-    memo,
-    timestamp
-FROM flow_data
-WHERE data->>'amount' > '1000'
-ORDER BY timestamp DESC
-LIMIT 10;
-
--- Daily payment volumes
-SELECT 
-    DATE(timestamp) as day,
-    COUNT(*) as payment_count,
-    SUM((data->>'amount')::numeric) as total_volume
-FROM flow_data
-GROUP BY DATE(timestamp)
-ORDER BY day DESC;
+```bash
+curl -X POST \
+  -H "Authorization: Api-Key $API_KEY" \
+  -H "Content-Type: text/yaml" \
+  --data-binary @contract-events-to-postgres.yaml \
+  "$CONSOLE/api/v1/flow/pipelines/validate/"
 ```
 
-## Next Steps
+A valid config returns:
 
-Now that your first pipeline is running:
+```json
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [],
+  "effective_config": {
+    "apiVersion": "flow.obsrvr.com/v1",
+    "kind": "Pipeline",
+    "metadata": {"name": "ContractEventsToPostgres"},
+    "spec": {"...": "..."}
+  }
+}
+```
 
-1. **Explore More Processors**: Try [Contract Events](../processors/contract-events.md) for Soroban
-2. **Add Multiple Consumers**: Send data to both PostgreSQL and Webhooks
-3. **Build Complex Pipelines**: Chain processors for advanced use cases
-4. **Optimize Performance**: Tune batch sizes and configurations
+## 3. Apply and start the pipeline
 
-## Common Issues
+```bash
+curl -X POST \
+  -H "Authorization: Api-Key $API_KEY" \
+  -H "Content-Type: text/yaml" \
+  --data-binary @contract-events-to-postgres.yaml \
+  "$CONSOLE/api/v1/flow/pipelines/apply/?auto_start=true"
+```
 
-### Pipeline Stuck in "Deploying"
-- Check your consumer credentials
-- Verify network connectivity
-- Review deployment logs
+`apply` is idempotent. If `ContractEventsToPostgres` does not exist, Flow creates it. If it exists and is stopped, Flow updates it.
 
-### No Data Appearing
-- Confirm transactions match your filter criteria
-- Check the start ledger configuration
-- Verify processor configuration
+Response:
 
-### High Costs
-- Optimize batch sizes for better efficiency
-- Consider filtering criteria to reduce data volume
-- Monitor runtime metrics
+```json
+{
+  "pipeline_id": "47d6e2c8-8fb8-46a5-9222-932f2f9d7ac9",
+  "action": "created",
+  "status": "running",
+  "warnings": [],
+  "errors": []
+}
+```
 
-## Getting Help
+Save the `pipeline_id` as `PIPELINE_UUID` for later commands.
 
-- **Documentation**: Browse our comprehensive guides
-- **Support**: Contact support@withobsrvr.com
-- **Community**: Join our Discord server
-- **Status**: Check [status.withobsrvr.com](https://status.withobsrvr.com)
+```bash
+export PIPELINE_UUID="47d6e2c8-8fb8-46a5-9222-932f2f9d7ac9"
+```
+
+## 4. List and inspect pipelines
+
+```bash
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$CONSOLE/api/v1/flow/pipelines/"
+```
+
+Get one pipeline:
+
+```bash
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$CONSOLE/api/v1/flow/pipelines/$PIPELINE_UUID/"
+```
+
+## 5. Stop or start the pipeline
+
+```bash
+curl -X POST -H "Authorization: Api-Key $API_KEY" \
+  "$CONSOLE/api/v1/flow/pipelines/$PIPELINE_UUID/stop/"
+
+curl -X POST -H "Authorization: Api-Key $API_KEY" \
+  "$CONSOLE/api/v1/flow/pipelines/$PIPELINE_UUID/start/"
+```
+
+You must stop a running pipeline before updating its config.
+
+## 6. Export the current config
+
+```bash
+curl -H "Authorization: Api-Key $API_KEY" \
+  "$CONSOLE/api/v1/flow/pipelines/$PIPELINE_UUID/config/"
+```
+
+Use export to bring a Console-created pipeline into source control. Review and remove secrets before committing.
+
+## Continuous processing
+
+For a continuous pipeline, omit `endLedger`:
+
+```yaml
+spec:
+  network: testnet
+  startLedger: "2434280"
+  processors:
+    - type: contract_event
+      config:
+        network_passphrase: Test SDF Network ; September 2015
+  consumers:
+    - type: contract_events_postgres
+      config:
+        host: postgres.example.com
+        port: 5432
+        database: defaultdb
+        username: postgres
+        password: ${POSTGRES_PASSWORD}
+        sslmode: require
+```
+
+## Mainnet
+
+For mainnet, set `spec.network` and the network passphrase:
+
+```yaml
+network: mainnet
+```
+
+```yaml
+network_passphrase: Public Global Stellar Network ; September 2015
+```
+
+## Next steps
+
+- [Pipeline API reference](/docs/flow/api)
+- [Pipeline concepts](/docs/flow/concepts/pipelines)
+- [Processors](/docs/flow/processors/)
+- [Consumers](/docs/flow/consumers/)
+- [Flow pricing](/docs/flow/pricing)
