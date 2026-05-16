@@ -23,7 +23,8 @@ Usage-based for early builders. Flat-rate for teams running at scale. Managed an
     <a href="https://console.withobsrvr.com" className="pricing-button secondary">Start building</a>
   </div>
 
-  <div className="pricing-tier-card">
+  <div className="pricing-tier-card featured">
+    <span className="pricing-flag">Recommended</span>
     <h3>Builder</h3>
     <p className="pricing-tier-sub">For teams building real Stellar and Soroban products.</p>
     <div className="pricing-price">$499<span>per month</span></div>
@@ -34,7 +35,7 @@ Usage-based for early builders. Flat-rate for teams running at scale. Managed an
       <li>Limited DuckLake SQL access</li>
       <li>Email support, best-effort response</li>
     </ul>
-    <a href="https://console.withobsrvr.com" className="pricing-button secondary">Start building</a>
+    <a href="https://console.withobsrvr.com" className="pricing-button primary">Start building</a>
   </div>
 
   <div className="pricing-tier-card">
@@ -50,8 +51,7 @@ Usage-based for early builders. Flat-rate for teams running at scale. Managed an
     <a href="mailto:sales@withobsrvr.com" className="pricing-button secondary">Contact sales</a>
   </div>
 
-  <div className="pricing-tier-card featured">
-    <span className="pricing-flag">Recommended</span>
+  <div className="pricing-tier-card">
     <h3>Managed</h3>
     <p className="pricing-tier-sub">Obsrvr builds and operates custom data processors for you.</p>
     <div className="pricing-price">$5,500<span>per month</span></div>
@@ -61,7 +61,7 @@ Usage-based for early builders. Flat-rate for teams running at scale. Managed an
       <li>Priority support</li>
       <li>99.9% availability target, with SLA available by contract</li>
     </ul>
-    <a href="mailto:sales@withobsrvr.com" className="pricing-button primary">Contact sales</a>
+    <a href="mailto:sales@withobsrvr.com" className="pricing-button secondary">Contact sales</a>
   </div>
 
   <div className="pricing-tier-card">
